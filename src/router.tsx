@@ -3,7 +3,7 @@ import { routerWithQueryClient } from '@tanstack/react-router-with-query'
 import * as TanstackQuery from './integrations/tanstack-query/root-provider'
 
 // Import the generated route tree
-import { routeTree } from './routeTree.gen'
+import { routeTree } from './routeTree.gen.ts'
 
 // Create a new router instance
 export const createRouter = () => {
