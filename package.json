@@ -15,7 +15,9 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "check": "prettier --check . && eslint . --ext .js,.jsx,.ts,.tsx && tsc --noEmit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "release": "standard-version",
+    "changelog": "standard-version --dry-run"
   },
   "dependencies": {
     "@faker-js/faker": "^9.6.0",
@@ -62,6 +64,7 @@
     "jsdom": "^26.0.0",
     "lint-staged": "^16.1.5",
     "prettier": "^3.5.3",
+    "standard-version": "^9.5.0",
     "typescript": "^5.7.2",
     "vite": "^6.3.5",
     "vitest": "^3.0.5",
@@ -75,5 +78,11 @@
     "*.{json,md,css}": [
       "prettier --write"
     ]
+  },
+  "version": "0.1.0",
+  "husky": {
+    "hooks": {
+      "pre-push": "npm run release"
+    }
   }
 }
