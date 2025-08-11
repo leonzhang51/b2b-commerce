@@ -16,6 +16,14 @@ const config = defineConfig({
     }),
     viteReact(),
   ],
+  server: {
+    // Ensure static assets are served correctly
+    fs: {
+      strict: false,
+    },
+  },
+  // Optimize asset handling
+  assetsInclude: ['**/*.svg', '**/*.jpg', '**/*.jpeg', '**/*.png', '**/*.gif'],
 })
 
 export default config

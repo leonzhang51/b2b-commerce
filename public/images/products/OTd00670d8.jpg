@@ -1,0 +1,11 @@
+<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#dc2626"/>
+  <rect x="150" y="100" width="100" height="200" fill="#b91c1c" stroke="#991b1b" stroke-width="2"/>
+  <rect x="160" y="120" width="80" height="20" fill="#ef4444"/>
+  <rect x="160" y="150" width="80" height="20" fill="#ef4444"/>
+  <rect x="160" y="180" width="80" height="20" fill="#ef4444"/>
+  <rect x="160" y="210" width="80" height="20" fill="#ef4444"/>
+  <rect x="160" y="240" width="80" height="20" fill="#ef4444"/>
+  <text x="200" y="340" font-family="Arial, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="bold">Outdoor Tool</text>
+  <text x="200" y="360" font-family="Arial, sans-serif" font-size="12" fill="#fecaca" text-anchor="middle">OTd00670d8</text>
+</svg>

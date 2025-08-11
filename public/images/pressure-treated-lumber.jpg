@@ -1,0 +1,11 @@
+<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#8B4513"/>
+  <rect x="50" y="100" width="300" height="200" fill="#A0522D" stroke="#654321" stroke-width="2"/>
+  <rect x="60" y="110" width="280" height="20" fill="#CD853F"/>
+  <rect x="60" y="140" width="280" height="20" fill="#CD853F"/>
+  <rect x="60" y="170" width="280" height="20" fill="#CD853F"/>
+  <rect x="60" y="200" width="280" height="20" fill="#CD853F"/>
+  <rect x="60" y="230" width="280" height="20" fill="#CD853F"/>
+  <rect x="60" y="260" width="280" height="20" fill="#CD853F"/>
+  <text x="200" y="350" font-family="Arial, sans-serif" font-size="16" fill="#FFFFFF" text-anchor="middle" font-weight="bold">Pressure Treated Lumber</text>
+</svg>

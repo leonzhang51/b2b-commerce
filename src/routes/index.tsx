@@ -1,39 +1,24 @@
 import { createFileRoute } from '@tanstack/react-router'
-import logo from '../logo.svg'
+import { B2BCommercePage } from '@/components/B2BCommercePage'
+import { ClientOnly } from '@/components/ClientOnly'
 
-export const Route = createFileRoute('/')({
-  component: App,
-})
-
-function App() {
+function IndexComponent() {
   return (
-    <div className="text-center">
-      <header className="min-h-screen flex flex-col items-center justify-center bg-[#282c34] text-white text-[calc(10px+2vmin)]">
-        <img
-          src={logo}
-          className="h-[40vmin] pointer-events-none animate-[spin_20s_linear_infinite]"
-          alt="logo"
-        />
-        <p>
-          Edit <code>src/routes/index.tsx</code> and save to reload.
-        </p>
-        <a
-          className="text-[#61dafb] hover:underline"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-        <a
-          className="text-[#61dafb] hover:underline"
-          href="https://tanstack.com"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn TanStack
-        </a>
-      </header>
-    </div>
+    <ClientOnly
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
+            <p className="text-gray-600">Loading B2B Commerce Platform...</p>
+          </div>
+        </div>
+      }
+    >
+      <B2BCommercePage />
+    </ClientOnly>
   )
 }
+
+export const Route = createFileRoute('/')({
+  component: IndexComponent,
+})

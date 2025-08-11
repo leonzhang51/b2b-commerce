@@ -1,0 +1,9 @@
+<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#ea580c"/>
+  <rect x="150" y="150" width="100" height="100" fill="#dc2626" stroke="#b91c1c" stroke-width="2"/>
+  <circle cx="200" cy="200" r="40" fill="#f97316"/>
+  <circle cx="200" cy="200" r="25" fill="#fb923c"/>
+  <circle cx="200" cy="200" r="10" fill="#fed7aa"/>
+  <text x="200" y="320" font-family="Arial, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle" font-weight="bold">Drill & Saw</text>
+  <text x="200" y="340" font-family="Arial, sans-serif" font-size="12" fill="#fed7aa" text-anchor="middle">DSc8616a19</text>
+</svg>
