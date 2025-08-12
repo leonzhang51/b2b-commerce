@@ -11,11 +11,14 @@
 import { createServerRootRoute } from '@tanstack/react-start/server'
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UserAdminRouteImport } from './routes/user-admin'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as EditUserRouteImport } from './routes/edit-user'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EditUserIdRouteImport } from './routes/edit-user.$id'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
 import { Route as DemoTableRouteImport } from './routes/demo.table'
 import { Route as DemoMcpTodosRouteImport } from './routes/demo.mcp-todos'
@@ -32,6 +35,11 @@ import { ServerRoute as ApiDemoNamesServerRouteImport } from './routes/api.demo-
 
 const rootServerRouteImport = createServerRootRoute()
 
+const UserAdminRoute = UserAdminRouteImport.update({
+  id: '/user-admin',
+  path: '/user-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -47,6 +55,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EditUserRoute = EditUserRouteImport.update({
+  id: '/edit-user',
+  path: '/edit-user',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CategoriesRoute = CategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
@@ -56,6 +69,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const EditUserIdRoute = EditUserIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => EditUserRoute,
 } as any)
 const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
   id: '/demo/tanstack-query',
@@ -126,13 +144,16 @@ const ApiDemoNamesServerRoute = ApiDemoNamesServerRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
+  '/edit-user': typeof EditUserRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/user-admin': typeof UserAdminRoute
   '/demo/db-chat': typeof DemoDbChatRoute
   '/demo/mcp-todos': typeof DemoMcpTodosRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/edit-user/$id': typeof EditUserIdRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -141,13 +162,16 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
+  '/edit-user': typeof EditUserRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/user-admin': typeof UserAdminRoute
   '/demo/db-chat': typeof DemoDbChatRoute
   '/demo/mcp-todos': typeof DemoMcpTodosRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/edit-user/$id': typeof EditUserIdRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -157,13 +181,16 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
+  '/edit-user': typeof EditUserRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/user-admin': typeof UserAdminRoute
   '/demo/db-chat': typeof DemoDbChatRoute
   '/demo/mcp-todos': typeof DemoMcpTodosRoute
   '/demo/table': typeof DemoTableRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/edit-user/$id': typeof EditUserIdRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -174,13 +201,16 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/categories'
+    | '/edit-user'
     | '/login'
     | '/register'
     | '/reset-password'
+    | '/user-admin'
     | '/demo/db-chat'
     | '/demo/mcp-todos'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/edit-user/$id'
     | '/demo/form/address'
     | '/demo/form/simple'
     | '/demo/start/api-request'
@@ -189,13 +219,16 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/categories'
+    | '/edit-user'
     | '/login'
     | '/register'
     | '/reset-password'
+    | '/user-admin'
     | '/demo/db-chat'
     | '/demo/mcp-todos'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/edit-user/$id'
     | '/demo/form/address'
     | '/demo/form/simple'
     | '/demo/start/api-request'
@@ -204,13 +237,16 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/categories'
+    | '/edit-user'
     | '/login'
     | '/register'
     | '/reset-password'
+    | '/user-admin'
     | '/demo/db-chat'
     | '/demo/mcp-todos'
     | '/demo/table'
     | '/demo/tanstack-query'
+    | '/edit-user/$id'
     | '/demo/form/address'
     | '/demo/form/simple'
     | '/demo/start/api-request'
@@ -220,9 +256,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CategoriesRoute: typeof CategoriesRoute
+  EditUserRoute: typeof EditUserRouteWithChildren
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  UserAdminRoute: typeof UserAdminRoute
   DemoDbChatRoute: typeof DemoDbChatRoute
   DemoMcpTodosRoute: typeof DemoMcpTodosRoute
   DemoTableRoute: typeof DemoTableRoute
@@ -288,6 +326,13 @@ export interface RootServerRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/user-admin': {
+      id: '/user-admin'
+      path: '/user-admin'
+      fullPath: '/user-admin'
+      preLoaderRoute: typeof UserAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -309,6 +354,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/edit-user': {
+      id: '/edit-user'
+      path: '/edit-user'
+      fullPath: '/edit-user'
+      preLoaderRoute: typeof EditUserRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/categories': {
       id: '/categories'
       path: '/categories'
@@ -322,6 +374,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/edit-user/$id': {
+      id: '/edit-user/$id'
+      path: '/$id'
+      fullPath: '/edit-user/$id'
+      preLoaderRoute: typeof EditUserIdRouteImport
+      parentRoute: typeof EditUserRoute
     }
     '/demo/tanstack-query': {
       id: '/demo/tanstack-query'
@@ -421,12 +480,26 @@ declare module '@tanstack/react-start/server' {
   }
 }
 
+interface EditUserRouteChildren {
+  EditUserIdRoute: typeof EditUserIdRoute
+}
+
+const EditUserRouteChildren: EditUserRouteChildren = {
+  EditUserIdRoute: EditUserIdRoute,
+}
+
+const EditUserRouteWithChildren = EditUserRoute._addFileChildren(
+  EditUserRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CategoriesRoute: CategoriesRoute,
+  EditUserRoute: EditUserRouteWithChildren,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  UserAdminRoute: UserAdminRoute,
   DemoDbChatRoute: DemoDbChatRoute,
   DemoMcpTodosRoute: DemoMcpTodosRoute,
   DemoTableRoute: DemoTableRoute,

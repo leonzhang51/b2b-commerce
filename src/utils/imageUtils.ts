@@ -59,8 +59,8 @@ export function isImageUrl(url: string): boolean {
  * Generate a placeholder image URL based on product name or ID
  */
 export function generatePlaceholderUrl(
-  productName?: string,
-  productId?: string,
+  _productName?: string,
+  _productId?: string,
 ): string {
   // For now, just return the default placeholder
   // In the future, we could generate different placeholders based on product type
