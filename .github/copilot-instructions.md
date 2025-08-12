@@ -55,7 +55,11 @@ export function Component({ children, title, onAction }: ComponentProps) {
 }
 ```
 
-### Data Fetching Patterns (TanStack Query)
+### Data Fetching & State Management Patterns
+
+#### Server State (TanStack Query)
+
+Use for data that comes from or syncs with APIs/Supabase:
 
 ```typescript
 import {
@@ -89,6 +93,51 @@ function useUpdateUser() {
       return res.json()
     },
   })
+}
+```
+
+#### Client State (Zustand)
+
+Use for shared application state (cart, UI state, preferences):
+
+```typescript
+import { useCartStore, useUIStore } from '@/store'
+
+// ✅ Using Zustand stores
+function CartButton() {
+  const totalItems = useCartStore((state) => state.totalItems)
+  const addItem = useCartStore((state) => state.addItem)
+
+  return <button>Cart ({totalItems})</button>
+}
+
+// ✅ SSR-safe store usage
+import { useStoreWithHydration } from '@/hooks/useHydration'
+
+function SafeCartButton() {
+  const totalItems = useStoreWithHydration(
+    () => useCartStore((state) => state.totalItems),
+    0 // fallback value
+  )
+
+  return <button>Cart ({totalItems})</button>
+}
+```
+
+#### Available Stores:
+
+- `useTodoStore`: Todo/task management
+- `useCartStore`: Shopping cart state
+- `useUIStore`: UI state (theme, sidebar, notifications)
+
+#### Local State (React)
+
+Use for component-specific state only:
+
+```typescript
+function Component() {
+  const [localValue, setLocalValue] = useState('')
+  // ...
 }
 ```
 

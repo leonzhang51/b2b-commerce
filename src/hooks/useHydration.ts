@@ -27,3 +27,14 @@ export function useIsClient() {
 
   return isClient
 }
+
+/**
+ * Hook to safely use Zustand stores with SSR
+ * Returns the store value only after hydration is complete
+ */
+export function useStoreWithHydration<T>(store: () => T, fallback: T): T {
+  const isHydrated = useHydration()
+  const storeValue = store()
+
+  return isHydrated ? storeValue : fallback
+}

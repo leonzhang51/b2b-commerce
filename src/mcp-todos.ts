@@ -1,47 +1,25 @@
-import fs from 'node:fs'
+// Legacy file - replaced by Zustand store implementation
+// This file is kept for backward compatibility but should use the new store instead
 
-const todosPath = './mcp-todos.json'
+import type { Todo } from '@/types/todo'
+import { useTodoStore } from '@/store/todoStore'
 
-// In-memory todos storage
-const todos = fs.existsSync(todosPath)
-  ? JSON.parse(fs.readFileSync(todosPath, 'utf8'))
-  : [
-      {
-        id: 1,
-        title: 'Buy groceries',
-      },
-    ]
+// Re-export the Todo type for backward compatibility
+export type { Todo }
 
-// Subscription callbacks per userID
-let subscribers: Array<(todos: Array<Todo>) => void> = []
-
-export type Todo = {
-  id: number
-  title: string
-}
-
-// Get the todos for a user
+// Legacy functions that delegate to the Zustand store
 export function getTodos(): Array<Todo> {
-  return todos
+  return useTodoStore.getState().todos
 }
 
-// Add an item to the todos
-export function addTodo(title: string) {
-  todos.push({ id: todos.length + 1, title })
-  fs.writeFileSync(todosPath, JSON.stringify(todos, null, 2))
-  notifySubscribers()
+export function addTodo(title: string): void {
+  useTodoStore.getState().addTodo(title)
 }
 
-// Subscribe to cart changes for a user
+// Note: The subscription pattern is replaced by Zustand's built-in reactivity
+// Components should use the useTodoStore hook directly instead of subscribeToTodos
 export function subscribeToTodos(callback: (todos: Array<Todo>) => void) {
-  subscribers.push(callback)
-  callback(todos)
-  return () => {
-    subscribers = subscribers.filter((cb) => cb !== callback)
-  }
-}
-
-// Notify all subscribers of a user's cart
-function notifySubscribers() {
-  subscribers.forEach((cb) => cb(todos))
+  return useTodoStore.subscribe((state) => {
+    callback(state.todos)
+  })
 }

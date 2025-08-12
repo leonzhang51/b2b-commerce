@@ -16,6 +16,16 @@
 ## 🟡 Features To Be Done
 
 - User authentication and roles
+  Implement registration, login, and logout UI (sign up, sign in, sign out)
+  Integrate Supabase Auth for user management
+  Add email confirmation and password reset flows
+  Store additional user profile fields (name, company, phone, etc.) in public.users
+  Sync Supabase auth.users with public.users via trigger or app logic
+  Implement role assignment (admin, manager, buyer, etc.) in public.users or a roles table
+  Add role-based route protection (RequireRole component)
+  Add admin UI for managing users and roles
+  Enforce Row Level Security (RLS) in Supabase for data access by role
+  Test all authentication and authorization flows
 - Shopping cart functionality (branch: feat/cart)
 - Order management and checkout flow
 - API endpoints for cart and orders

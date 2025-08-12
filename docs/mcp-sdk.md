@@ -10,6 +10,53 @@ The MCP SDK is integrated into the codebase to handle tasks such as:
 - Facilitating communication between components and services.
 - Providing utilities for data synchronization and state management.
 
+## Important Note
+
+**The todo functionality in this codebase has been migrated to use Zustand for state management.** The `src/mcp-todos.ts` file now serves as a legacy compatibility layer that delegates to the new Zustand store implementation. For new features, use the Zustand stores directly.
+
+## State Management Architecture
+
+The application now uses **Zustand** for client-side state management alongside **TanStack Query** for server state:
+
+- **Zustand stores**: For client-side state (cart, UI state, todos, etc.)
+- **TanStack Query**: For server state (data from APIs/Supabase)
+- **MCP SDK**: For specialized context management when needed
+
+## Migration from MCP to Zustand
+
+### Before (MCP Pattern):
+
+```typescript
+// Old MCP pattern
+import { getTodos, addTodo, subscribeToTodos } from '@/mcp-todos'
+
+const todos = getTodos()
+addTodo('New task')
+const unsubscribe = subscribeToTodos((updatedTodos) => {
+  // Handle updates
+})
+```
+
+### After (Zustand Pattern):
+
+```typescript
+// New Zustand pattern
+import { useTodoStore } from '@/store'
+
+function TodoComponent() {
+  const todos = useTodoStore((state) => state.todos)
+  const addTodo = useTodoStore((state) => state.addTodo)
+
+  // Component automatically re-renders when state changes
+  return (
+    <div>
+      {todos.map(todo => <div key={todo.id}>{todo.title}</div>)}
+      <button onClick={() => addTodo('New task')}>Add Todo</button>
+    </div>
+  )
+}
+```
+
 ## Key Files and Directories
 
 1. **`src/mcp-todos.ts`**:
