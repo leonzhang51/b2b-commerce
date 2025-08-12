@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.4...v0.1.5) (2025-08-12)
+
+### Features
+
+- add user management and editing functionality with new routes and components ([f2eb47b](https://github.com/leonzhang51/b2b-commerce/commit/f2eb47bc7e1dfd932ee26f16bb3f3308bcd1d7b4))
+
 ### [0.1.4](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.3...v0.1.4) (2025-08-12)
 
 ### Features
