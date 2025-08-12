@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { Link } from '@tanstack/react-router'
+import { useAuth } from '@/hooks/useAuth'
 import { ConnectionTest } from '@/components/ConnectionTest'
 import { CategoryNavigation } from '@/components/CategoryNavigation'
 import { ProductGrid } from '@/components/ProductGrid'
@@ -47,9 +49,35 @@ export function B2BCommercePage() {
               <button className="text-gray-600 hover:text-gray-900">
                 Cart (0)
               </button>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                Sign In
-              </button>
+              {(() => {
+                const { user, signOut } = useAuth()
+                if (user) {
+                  return (
+                    <button
+                      className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300"
+                      onClick={signOut}
+                    >
+                      Sign Out
+                    </button>
+                  )
+                }
+                return (
+                  <>
+                    <Link
+                      to="/login"
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300"
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )
+              })()}
             </div>
           </div>
         </div>

@@ -33,6 +33,13 @@ src/
 
 ## ⚛️ React & TanStack Patterns
 
+### Component & Type Reuse Guidelines
+
+- When defining a new type or interface in a component, first evaluate if the type is only relevant to that component or if it could be reused by other components.
+- If the type is reusable, define it in the `src/types/` folder for easy reuse and import it where needed.
+- Before creating a new type, always check the `src/types/` folder for an existing type that can be reused or extended.
+- Only define types locally in a component if they are truly component-specific and not shared elsewhere.
+
 ### Component Architecture
 
 ```typescript

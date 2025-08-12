@@ -8,7 +8,12 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createServerRootRoute } from '@tanstack/react-start/server'
+
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo.tanstack-query'
@@ -19,7 +24,29 @@ import { Route as DemoStartServerFuncsRouteImport } from './routes/demo.start.se
 import { Route as DemoStartApiRequestRouteImport } from './routes/demo.start.api-request'
 import { Route as DemoFormSimpleRouteImport } from './routes/demo.form.simple'
 import { Route as DemoFormAddressRouteImport } from './routes/demo.form.address'
+import { ServerRoute as McpServerRouteImport } from './routes/mcp'
+import { ServerRoute as DemoDbChatApiServerRouteImport } from './routes/demo.db-chat-api'
+import { ServerRoute as ApiMcpTodosServerRouteImport } from './routes/api.mcp-todos'
+import { ServerRoute as ApiDemoTqTodosServerRouteImport } from './routes/api.demo-tq-todos'
+import { ServerRoute as ApiDemoNamesServerRouteImport } from './routes/api.demo-names'
 
+const rootServerRouteImport = createServerRootRoute()
+
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CategoriesRoute = CategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
@@ -70,10 +97,38 @@ const DemoFormAddressRoute = DemoFormAddressRouteImport.update({
   path: '/demo/form/address',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McpServerRoute = McpServerRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const DemoDbChatApiServerRoute = DemoDbChatApiServerRouteImport.update({
+  id: '/demo/db-chat-api',
+  path: '/demo/db-chat-api',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiMcpTodosServerRoute = ApiMcpTodosServerRouteImport.update({
+  id: '/api/mcp-todos',
+  path: '/api/mcp-todos',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiDemoTqTodosServerRoute = ApiDemoTqTodosServerRouteImport.update({
+  id: '/api/demo-tq-todos',
+  path: '/api/demo-tq-todos',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiDemoNamesServerRoute = ApiDemoNamesServerRouteImport.update({
+  id: '/api/demo-names',
+  path: '/api/demo-names',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/demo/db-chat': typeof DemoDbChatRoute
   '/demo/mcp-todos': typeof DemoMcpTodosRoute
   '/demo/table': typeof DemoTableRoute
@@ -86,6 +141,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/demo/db-chat': typeof DemoDbChatRoute
   '/demo/mcp-todos': typeof DemoMcpTodosRoute
   '/demo/table': typeof DemoTableRoute
@@ -99,6 +157,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/demo/db-chat': typeof DemoDbChatRoute
   '/demo/mcp-todos': typeof DemoMcpTodosRoute
   '/demo/table': typeof DemoTableRoute
@@ -113,6 +174,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/categories'
+    | '/login'
+    | '/register'
+    | '/reset-password'
     | '/demo/db-chat'
     | '/demo/mcp-todos'
     | '/demo/table'
@@ -125,6 +189,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/categories'
+    | '/login'
+    | '/register'
+    | '/reset-password'
     | '/demo/db-chat'
     | '/demo/mcp-todos'
     | '/demo/table'
@@ -137,6 +204,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/categories'
+    | '/login'
+    | '/register'
+    | '/reset-password'
     | '/demo/db-chat'
     | '/demo/mcp-todos'
     | '/demo/table'
@@ -150,6 +220,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CategoriesRoute: typeof CategoriesRoute
+  LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   DemoDbChatRoute: typeof DemoDbChatRoute
   DemoMcpTodosRoute: typeof DemoMcpTodosRoute
   DemoTableRoute: typeof DemoTableRoute
@@ -159,9 +232,83 @@ export interface RootRouteChildren {
   DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
   DemoStartServerFuncsRoute: typeof DemoStartServerFuncsRoute
 }
+export interface FileServerRoutesByFullPath {
+  '/mcp': typeof McpServerRoute
+  '/api/demo-names': typeof ApiDemoNamesServerRoute
+  '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
+  '/api/mcp-todos': typeof ApiMcpTodosServerRoute
+  '/demo/db-chat-api': typeof DemoDbChatApiServerRoute
+}
+export interface FileServerRoutesByTo {
+  '/mcp': typeof McpServerRoute
+  '/api/demo-names': typeof ApiDemoNamesServerRoute
+  '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
+  '/api/mcp-todos': typeof ApiMcpTodosServerRoute
+  '/demo/db-chat-api': typeof DemoDbChatApiServerRoute
+}
+export interface FileServerRoutesById {
+  __root__: typeof rootServerRouteImport
+  '/mcp': typeof McpServerRoute
+  '/api/demo-names': typeof ApiDemoNamesServerRoute
+  '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
+  '/api/mcp-todos': typeof ApiMcpTodosServerRoute
+  '/demo/db-chat-api': typeof DemoDbChatApiServerRoute
+}
+export interface FileServerRouteTypes {
+  fileServerRoutesByFullPath: FileServerRoutesByFullPath
+  fullPaths:
+    | '/mcp'
+    | '/api/demo-names'
+    | '/api/demo-tq-todos'
+    | '/api/mcp-todos'
+    | '/demo/db-chat-api'
+  fileServerRoutesByTo: FileServerRoutesByTo
+  to:
+    | '/mcp'
+    | '/api/demo-names'
+    | '/api/demo-tq-todos'
+    | '/api/mcp-todos'
+    | '/demo/db-chat-api'
+  id:
+    | '__root__'
+    | '/mcp'
+    | '/api/demo-names'
+    | '/api/demo-tq-todos'
+    | '/api/mcp-todos'
+    | '/demo/db-chat-api'
+  fileServerRoutesById: FileServerRoutesById
+}
+export interface RootServerRouteChildren {
+  McpServerRoute: typeof McpServerRoute
+  ApiDemoNamesServerRoute: typeof ApiDemoNamesServerRoute
+  ApiDemoTqTodosServerRoute: typeof ApiDemoTqTodosServerRoute
+  ApiMcpTodosServerRoute: typeof ApiMcpTodosServerRoute
+  DemoDbChatApiServerRoute: typeof DemoDbChatApiServerRoute
+}
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/categories': {
       id: '/categories'
       path: '/categories'
@@ -234,10 +381,52 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+declare module '@tanstack/react-start/server' {
+  interface ServerFileRoutesByPath {
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/demo/db-chat-api': {
+      id: '/demo/db-chat-api'
+      path: '/demo/db-chat-api'
+      fullPath: '/demo/db-chat-api'
+      preLoaderRoute: typeof DemoDbChatApiServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/mcp-todos': {
+      id: '/api/mcp-todos'
+      path: '/api/mcp-todos'
+      fullPath: '/api/mcp-todos'
+      preLoaderRoute: typeof ApiMcpTodosServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/demo-tq-todos': {
+      id: '/api/demo-tq-todos'
+      path: '/api/demo-tq-todos'
+      fullPath: '/api/demo-tq-todos'
+      preLoaderRoute: typeof ApiDemoTqTodosServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/demo-names': {
+      id: '/api/demo-names'
+      path: '/api/demo-names'
+      fullPath: '/api/demo-names'
+      preLoaderRoute: typeof ApiDemoNamesServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+  }
+}
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CategoriesRoute: CategoriesRoute,
+  LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   DemoDbChatRoute: DemoDbChatRoute,
   DemoMcpTodosRoute: DemoMcpTodosRoute,
   DemoTableRoute: DemoTableRoute,
@@ -250,3 +439,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+const rootServerRouteChildren: RootServerRouteChildren = {
+  McpServerRoute: McpServerRoute,
+  ApiDemoNamesServerRoute: ApiDemoNamesServerRoute,
+  ApiDemoTqTodosServerRoute: ApiDemoTqTodosServerRoute,
+  ApiMcpTodosServerRoute: ApiMcpTodosServerRoute,
+  DemoDbChatApiServerRoute: DemoDbChatApiServerRoute,
+}
+export const serverRouteTree = rootServerRouteImport
+  ._addFileChildren(rootServerRouteChildren)
+  ._addFileTypes<FileServerRouteTypes>()
