@@ -43,8 +43,7 @@ export interface User {
   readonly id: string
   readonly company_id: string
   readonly email: string
-  readonly first_name: string
-  readonly last_name: string
+  readonly full_name: string
   readonly phone?: string
   readonly job_title?: string
   readonly department?: string
@@ -56,6 +55,7 @@ export interface User {
     | 'general'
   readonly permissions: ReadonlyArray<string>
   readonly is_active: boolean
+  readonly role: 'admin' | 'manager' | 'buyer' | 'guest'
   readonly last_login?: string
   readonly created_at: string
   readonly updated_at: string

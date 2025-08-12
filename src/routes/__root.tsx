@@ -5,7 +5,7 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 
-import Header from '../components/Header.tsx'
+import { Header } from '../components/Header.tsx'
 
 import TanStackQueryLayout from '../integrations/tanstack-query/layout.tsx'
 

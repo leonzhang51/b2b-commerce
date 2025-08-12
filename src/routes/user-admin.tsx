@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react'
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import type { Company, User } from '@/lib/supabase'
 import { supabase } from '@/lib/supabase'
+import { RequireRole } from '@/components/RequireRole'
+import { Modal } from '@/components/ui/Modal'
+import { EditUser } from '@/components/EditUser'
 
 export const Route = createFileRoute('/user-admin')({
-  component: UserAdminPage,
+  component: () => (
+    <RequireRole allowedRoles={['admin']}>
+      <UserAdminPage />
+    </RequireRole>
+  ),
 })
 
 function UserAdminPage() {
@@ -13,17 +20,23 @@ function UserAdminPage() {
   const [users, setUsers] = useState<Array<User>>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [roleUpdating, setRoleUpdating] = useState<string>('')
+  const [editUser, setEditUser] = useState<User | null>(null)
 
   useEffect(() => {
     async function fetchCompanies() {
       setLoading(true)
       setError(null)
-      const { data, error } = await supabase
+      // Get companies with at least one user
+      const { data: companiesData, error: companiesError } = await supabase
         .from('companies')
-        .select('*')
+        .select('*, users:users(id)')
         .order('name')
-      if (error) setError(error.message)
-      else setCompanies(data)
+      if (companiesError) setError(companiesError.message)
+      else {
+        // Only keep companies with at least one user
+        setCompanies(companiesData.filter((c) => c.users && c.users.length > 0))
+      }
       setLoading(false)
     }
     fetchCompanies()
@@ -37,13 +50,13 @@ function UserAdminPage() {
     async function fetchUsers() {
       setLoading(true)
       setError(null)
-      const { data, error } = await supabase
+      const { data: usersData, error: usersError } = await supabase
         .from('users')
         .select('*')
         .eq('company_id', selectedCompany)
-        .order('last_name')
-      if (error) setError(error.message)
-      else setUsers(data)
+        .order('full_name')
+      if (usersError) setError(usersError.message)
+      else setUsers(usersData)
       setLoading(false)
     }
     fetchUsers()
@@ -76,7 +89,7 @@ function UserAdminPage() {
             <tr className="bg-gray-100">
               <th className="p-2 text-left">Name</th>
               <th className="p-2 text-left">Email</th>
-              <th className="p-2 text-left">Role(s)</th>
+              <th className="p-2 text-left">Role</th>
               <th className="p-2 text-left">Active</th>
               <th className="p-2 text-left">Edit</th>
             </tr>
@@ -84,28 +97,73 @@ function UserAdminPage() {
           <tbody>
             {users.map((u) => (
               <tr key={u.id} className="border-t">
-                <td className="p-2">
-                  {u.first_name} {u.last_name}
-                </td>
+                <td className="p-2">{u.full_name}</td>
                 <td className="p-2">{u.email}</td>
                 <td className="p-2">
-                  {Array.isArray(u.permissions) ? u.permissions.join(', ') : ''}
+                  <select
+                    className="border rounded px-2 py-1 capitalize"
+                    value={u.role}
+                    disabled={roleUpdating === u.id}
+                    onChange={async (e) => {
+                      const newRole = e.target.value as User['role']
+                      setRoleUpdating(u.id)
+                      const { error: updateError } = await supabase
+                        .from('users')
+                        .update({ role: newRole })
+                        .eq('id', u.id)
+                      setRoleUpdating('')
+                      if (!updateError) {
+                        setUsers((prev) =>
+                          prev.map((user) =>
+                            user.id === u.id
+                              ? { ...user, role: newRole }
+                              : user,
+                          ),
+                        )
+                      } else {
+                        alert('Failed to update role: ' + updateError.message)
+                      }
+                    }}
+                  >
+                    <option value="admin">Admin</option>
+                    <option value="manager">Manager</option>
+                    <option value="buyer">Buyer</option>
+                    <option value="guest">Guest</option>
+                  </select>
                 </td>
                 <td className="p-2">{u.is_active ? 'Yes' : 'No'}</td>
                 <td className="p-2">
-                  <Link
-                    to="/edit-user/$id"
-                    params={{ id: u.id }}
+                  <button
                     className="text-blue-600 underline"
+                    onClick={() => setEditUser(u)}
                   >
                     Edit
-                  </Link>
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
+      <Modal
+        open={!!editUser}
+        onOpenChange={(open) => setEditUser(open ? editUser : null)}
+        title="Edit User"
+      >
+        {editUser && (
+          <EditUser
+            user={editUser}
+            onSave={(updated) => {
+              setEditUser(null)
+              setUsers((prev) =>
+                prev.map((u) => (u.id === updated.id ? updated : u)),
+              )
+            }}
+          />
+        )}
+      </Modal>
     </div>
   )
 }
+
+export { UserAdminPage }

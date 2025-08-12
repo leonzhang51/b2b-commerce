@@ -4,6 +4,7 @@ export interface AuthUser {
   first_name?: string
   last_name?: string
   permissions?: Array<string>
+  role?: 'admin' | 'manager' | 'buyer' | 'guest'
 }
 
 export interface AuthFormProps {

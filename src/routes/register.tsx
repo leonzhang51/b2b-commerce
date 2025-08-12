@@ -21,6 +21,7 @@ export function RegisterPage() {
     e.preventDefault()
     setError(null)
     setSuccess(false)
+    // NOTE: 'role' is a required column in users table. Default to 'buyer'.
     const user_metadata = {
       first_name: firstName,
       last_name: lastName,
@@ -29,6 +30,7 @@ export function RegisterPage() {
       job_title: jobTitle,
       department,
       trade_type: tradeType,
+      role: 'buyer',
     }
     const result = await supabase.auth.signUp({
       email,
@@ -38,6 +40,32 @@ export function RegisterPage() {
     if (result.error) {
       setError(result.error.message)
     } else {
+      // Insert user profile into public.users if user is returned
+      const user = result.data.user
+      if (user) {
+        // Insert user profile with default role 'buyer'
+        const { error: profileError } = await supabase.from('users').insert([
+          {
+            id: user.id,
+            email: user.email,
+            first_name: firstName,
+            last_name: lastName,
+            company,
+            phone,
+            job_title: jobTitle,
+            department,
+            trade_type: tradeType,
+            role: 'buyer',
+            created_at: new Date().toISOString(),
+          },
+        ])
+        if (profileError) {
+          setError(
+            'Registered, but failed to save profile: ' + profileError.message,
+          )
+          return
+        }
+      }
       setSuccess(true)
     }
   }
