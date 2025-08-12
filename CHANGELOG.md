@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.4](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.3...v0.1.4) (2025-08-12)
+
+### Features
+
+- implement authentication flow with login, registration, and password reset features ([b46f569](https://github.com/leonzhang51/b2b-commerce/commit/b46f56927c6c1271bb1911c54c5652e0697de1b1))
+
 ### [0.1.3](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.2...v0.1.3) (2025-08-11)
 
 ### [0.1.2](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.1...v0.1.2) (2025-08-11)
