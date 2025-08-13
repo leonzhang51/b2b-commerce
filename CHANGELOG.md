@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.8](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.7...v0.1.8) (2025-08-13)
+
+### Features
+
+- add user management tests and improve user role handling ([400d70b](https://github.com/leonzhang51/b2b-commerce/commit/400d70b1fd43bb21183e1c6076d864c77bfcf3d7))
+- enhance user authentication tests and improve reset password flow ([5bea179](https://github.com/leonzhang51/b2b-commerce/commit/5bea179c4d56bcf1b3081dbad57ed72c5019f417))
+
 ### [0.1.7](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.6...v0.1.7) (2025-08-12)
 
 ### [0.1.6](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.5...v0.1.6) (2025-08-12)
