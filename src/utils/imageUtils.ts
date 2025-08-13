@@ -1,4 +1,74 @@
 /**
+ * Compress an image file client-side using Canvas API
+ * @param file - The image file to compress
+ * @param maxWidth - Maximum width (px)
+ * @param maxHeight - Maximum height (px)
+ * @param quality - JPEG/WebP quality (0-1)
+ * @returns Promise<File> - Compressed image file
+ */
+export async function compressImageFileAsync(
+  file: File,
+  maxWidth = 800,
+  maxHeight = 800,
+  quality = 0.8,
+): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image()
+    img.onload = () => {
+      const { width, height } = img
+      let newWidth = width
+      let newHeight = height
+      if (width > maxWidth || height > maxHeight) {
+        const ratio = Math.min(maxWidth / width, maxHeight / height)
+        newWidth = Math.round(width * ratio)
+        newHeight = Math.round(height * ratio)
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = newWidth
+      canvas.height = newHeight
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return reject(new Error('Canvas not supported'))
+      ctx.drawImage(img, 0, 0, newWidth, newHeight)
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return reject(new Error('Compression failed'))
+          const ext = file.type === 'image/png' ? 'png' : 'jpeg'
+          const compressedFile = new File(
+            [blob],
+            file.name.replace(/\.(jpg|jpeg|png)$/i, `.compressed.${ext}`),
+            {
+              type: blob.type,
+              lastModified: Date.now(),
+            },
+          )
+          resolve(compressedFile)
+        },
+        file.type === 'image/png' ? 'image/png' : 'image/jpeg',
+        quality,
+      )
+    }
+    img.onerror = (e) => reject(new Error('Image load error'))
+    img.src = URL.createObjectURL(file)
+  })
+}
+/**
+ * Generate srcSet for responsive/product images (WebP + fallback)
+ */
+export function getProductImageSrcSet(
+  src?: string,
+  fallback = '/placeholder-product.svg',
+): string | undefined {
+  if (!src) return undefined
+  // Assume images are stored as .jpg or .png, and .webp is available at same path
+  const base = src.replace(/\.(jpg|jpeg|png)$/i, '')
+  return [
+    `${base}.webp 1x`,
+    `${base}@2x.webp 2x`,
+    `${src} 1x`,
+    `${src.replace(/\.(jpg|jpeg|png)$/i, '@2x.$1')} 2x`,
+  ].join(', ')
+}
+/**
  * Utility functions for handling product images
  */
 

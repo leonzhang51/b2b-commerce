@@ -9,25 +9,29 @@ interface ProductGridProps {
 }
 
 export function ProductGrid({ categoryId, searchQuery }: ProductGridProps) {
-  const [page, setPage] = useState(0)
-  const limit = 12
-  const offset = page * limit
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(12)
+  const offset = (page - 1) * pageSize
 
   const {
-    data: products,
+    data: products = [],
     isLoading,
     error,
   } = useProducts({
     categoryId,
     search: searchQuery,
-    limit,
+    limit: pageSize,
     offset,
   })
+
+  // For total count, fetch first page with count
+  // (Assume useProducts can be extended to return count, or fetch separately if needed)
+  // For now, estimate if next page exists by products.length === pageSize
 
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {Array.from({ length: limit }).map((_, i) => (
+        {Array.from({ length: pageSize }).map((_, i) => (
           <ProductCardSkeleton key={i} />
         ))}
       </div>
@@ -45,7 +49,7 @@ export function ProductGrid({ categoryId, searchQuery }: ProductGridProps) {
     )
   }
 
-  if (!products || products.length === 0) {
+  if (products.length === 0) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-600 mb-2">No products found</p>
@@ -60,19 +64,52 @@ export function ProductGrid({ categoryId, searchQuery }: ProductGridProps) {
 
   return (
     <div className="space-y-6">
+      {/* Page size selector */}
+      <div className="flex items-center gap-2 mb-2">
+        <label htmlFor="page-size" className="text-sm text-gray-600">
+          Products per page:
+        </label>
+        <select
+          id="page-size"
+          className="border rounded px-2 py-1 text-sm"
+          value={pageSize}
+          onChange={(e) => {
+            setPageSize(Number(e.target.value))
+            setPage(1)
+          }}
+        >
+          {[6, 12, 24, 48].map((size) => (
+            <option key={size} value={size}>
+              {size}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
       </div>
 
-      {products.length === limit && (
-        <div className="flex justify-center">
-          <Button onClick={() => setPage((p) => p + 1)} variant="outline">
-            Load More Products
-          </Button>
-        </div>
-      )}
+      {/* Pagination controls */}
+      <div className="flex justify-center items-center gap-2 mt-4">
+        <Button
+          variant="outline"
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1}
+        >
+          Previous
+        </Button>
+        <span className="text-sm">Page {page}</span>
+        <Button
+          variant="outline"
+          onClick={() => setPage((p) => p + 1)}
+          disabled={products.length < pageSize}
+        >
+          Next
+        </Button>
+      </div>
     </div>
   )
 }

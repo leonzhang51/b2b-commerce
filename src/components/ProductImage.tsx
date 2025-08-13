@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { getImageSrc } from '@/utils/imageUtils'
+import { getImageSrc, getProductImageSrcSet } from '@/utils/imageUtils'
 
 interface ProductImageProps {
   src?: string
@@ -38,18 +38,25 @@ export function ProductImage({
 
   // Determine the image source to use
   const imageSrc = imageError ? fallbackSrc : getImageSrc(src, fallbackSrc)
+  const srcSet = !imageError
+    ? getProductImageSrcSet(src, fallbackSrc)
+    : undefined
 
   return (
     <div className="relative">
       <img
         src={imageSrc}
+        srcSet={srcSet}
         alt={alt}
-        className={`transition-opacity duration-300 ${
-          imageLoaded ? 'opacity-100' : 'opacity-0'
-        } ${className}`}
+        className={`transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'} ${className}`}
         onLoad={handleImageLoad}
         onError={handleImageError}
         loading={loading}
+        decoding="async"
+        sizes="(max-width: 768px) 100vw, 25vw"
+        width={400}
+        height={400}
+        style={{ objectFit: 'cover', width: '100%', height: '100%' }}
       />
       {!imageLoaded && showLoader && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-50">

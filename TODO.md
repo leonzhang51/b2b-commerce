@@ -1,3 +1,5 @@
+- [ ] Integrate real product image upload logic in `ProductManager.tsx` (replace demo URL logic with actual backend upload, e.g., Supabase Storage or S3)
+
 # Project TODO
 
 ## ✅ Features Done
