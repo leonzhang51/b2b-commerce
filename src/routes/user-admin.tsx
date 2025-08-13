@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import type { Company, User } from '@/lib/supabase'
-import { supabase } from '@/lib/supabase'
+import type { User } from '@/lib/supabase'
 import { RequireRole } from '@/components/RequireRole'
 import { Modal } from '@/components/ui/Modal'
 import { EditUser } from '@/components/EditUser'
+import { useCompaniesWithUsers, useCompanyUsers } from '@/hooks/useCompanyUsers'
+import { useUpdateUser } from '@/hooks/useUpdateUser'
 
 export const Route = createFileRoute('/user-admin')({
   component: () => (
@@ -15,52 +16,34 @@ export const Route = createFileRoute('/user-admin')({
 })
 
 function UserAdminPage() {
-  const [companies, setCompanies] = useState<Array<Company>>([])
   const [selectedCompany, setSelectedCompany] = useState<string>('')
-  const [users, setUsers] = useState<Array<User>>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [roleUpdating, setRoleUpdating] = useState<string>('')
   const [editUser, setEditUser] = useState<User | null>(null)
 
-  useEffect(() => {
-    async function fetchCompanies() {
-      setLoading(true)
-      setError(null)
-      // Get companies with at least one user
-      const { data: companiesData, error: companiesError } = await supabase
-        .from('companies')
-        .select('*, users:users(id)')
-        .order('name')
-      if (companiesError) setError(companiesError.message)
-      else {
-        // Only keep companies with at least one user
-        setCompanies(companiesData.filter((c) => c.users && c.users.length > 0))
-      }
-      setLoading(false)
-    }
-    fetchCompanies()
-  }, [])
+  const {
+    companies,
+    loading: companiesLoading,
+    error: companiesError,
+  } = useCompaniesWithUsers()
+  const {
+    users,
+    loading: usersLoading,
+    error: usersError,
+    updateUserInList,
+    updateUserRole,
+  } = useCompanyUsers(selectedCompany)
+  const { updateUserRole: updateRole, loading: roleUpdating } = useUpdateUser()
 
-  useEffect(() => {
-    if (!selectedCompany) {
-      setUsers([])
-      return
+  const loading = companiesLoading || usersLoading
+  const error = companiesError || usersError
+
+  const handleRoleChange = async (userId: string, newRole: User['role']) => {
+    const success = await updateRole(userId, newRole)
+    if (success) {
+      updateUserRole(userId, newRole)
+    } else {
+      alert('Failed to update role')
     }
-    async function fetchUsers() {
-      setLoading(true)
-      setError(null)
-      const { data: usersData, error: usersError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('company_id', selectedCompany)
-        .order('full_name')
-      if (usersError) setError(usersError.message)
-      else setUsers(usersData)
-      setLoading(false)
-    }
-    fetchUsers()
-  }, [selectedCompany])
+  }
 
   return (
     <div className="p-8 max-w-2xl mx-auto">
@@ -103,26 +86,10 @@ function UserAdminPage() {
                   <select
                     className="border rounded px-2 py-1 capitalize"
                     value={u.role}
-                    disabled={roleUpdating === u.id}
+                    disabled={roleUpdating}
                     onChange={async (e) => {
                       const newRole = e.target.value as User['role']
-                      setRoleUpdating(u.id)
-                      const { error: updateError } = await supabase
-                        .from('users')
-                        .update({ role: newRole })
-                        .eq('id', u.id)
-                      setRoleUpdating('')
-                      if (!updateError) {
-                        setUsers((prev) =>
-                          prev.map((user) =>
-                            user.id === u.id
-                              ? { ...user, role: newRole }
-                              : user,
-                          ),
-                        )
-                      } else {
-                        alert('Failed to update role: ' + updateError.message)
-                      }
+                      await handleRoleChange(u.id, newRole)
                     }}
                   >
                     <option value="admin">Admin</option>
@@ -155,9 +122,7 @@ function UserAdminPage() {
             user={editUser}
             onSave={(updated) => {
               setEditUser(null)
-              setUsers((prev) =>
-                prev.map((u) => (u.id === updated.id ? updated : u)),
-              )
+              updateUserInList(updated as User)
             }}
           />
         )}

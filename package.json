@@ -86,10 +86,5 @@
       "prettier --write"
     ]
   },
-  "version": "0.1.11",
-  "husky": {
-    "hooks": {
-      "pre-push": "npm run release"
-    }
-  }
+  "version": "0.1.10"
 }

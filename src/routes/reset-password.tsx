@@ -1,21 +1,16 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { useResetPassword } from '@/hooks/useResetPassword'
 
 export function ResetPasswordPage() {
   const [email, setEmail] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const { resetPassword, loading, error, success } = useResetPassword()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
-    setSuccess(false)
-    const result = await supabase.auth.resetPasswordForEmail(email)
-    if (result.error) setError(result.error.message)
-    else setSuccess(true)
+    await resetPassword(email)
   }
 
   return (
@@ -35,8 +30,8 @@ export function ResetPasswordPage() {
             Check your email for a password reset link.
           </div>
         )}
-        <Button type="submit" className="w-full">
-          Send Reset Link
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Sending...' : 'Send Reset Link'}
         </Button>
       </form>
       <div className="mt-4 text-sm">
