@@ -2,18 +2,22 @@ import { useState } from 'react'
 import type { User } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { supabase } from '@/lib/supabase'
+import { useUpdateUser } from '@/hooks/useUpdateUser'
+
+// Extended type for form fields that includes first_name and last_name
+type EditableUser = User & {
+  first_name?: string
+  last_name?: string
+}
 
 interface EditUserProps {
-  user: User
-  onSave?: (user: User) => void
+  user: EditableUser
+  onSave?: (user: EditableUser) => void
 }
 
 export function EditUser({ user, onSave }: EditUserProps) {
-  const [form, setForm] = useState<User>(user)
-  const [loading, setLoading] = useState(false)
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const [form, setForm] = useState<EditableUser>(user)
+  const { updateUser, loading, error, success } = useUpdateUser()
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -24,32 +28,11 @@ export function EditUser({ user, onSave }: EditUserProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    setErrorMsg(null)
-    setSuccess(false)
-    const { data, error: updateError } = await supabase
-      .from('users')
-      .update({
-        first_name: form.first_name,
-        last_name: form.last_name,
-        company_id: form.company_id,
-        phone: form.phone,
-        job_title: form.job_title,
-        department: form.department,
-        trade_type: form.trade_type,
-        permissions: form.permissions,
-        is_active: form.is_active,
-      })
-      .eq('id', form.id)
-      .select()
-      .single()
-    if (updateError) {
-      setErrorMsg(updateError.message)
-    } else {
-      setSuccess(true)
-      if (onSave && data) onSave(data as User)
+
+    const updatedUser = await updateUser(form)
+    if (updatedUser && onSave) {
+      onSave(updatedUser as EditableUser)
     }
-    setLoading(false)
   }
 
   return (
@@ -57,14 +40,14 @@ export function EditUser({ user, onSave }: EditUserProps) {
       <Input
         name="first_name"
         placeholder="First Name"
-        value={form.first_name}
+        value={form.first_name || ''}
         onChange={handleChange}
         required
       />
       <Input
         name="last_name"
         placeholder="Last Name"
-        value={form.last_name}
+        value={form.last_name || ''}
         onChange={handleChange}
         required
       />
@@ -136,7 +119,7 @@ export function EditUser({ user, onSave }: EditUserProps) {
         <option value="true">Active</option>
         <option value="false">Inactive</option>
       </select>
-      {errorMsg && <div className="text-red-500 text-sm">{errorMsg}</div>}
+      {error && <div className="text-red-500 text-sm">{error}</div>}
       {success && (
         <div className="text-green-600 text-sm">Profile updated!</div>
       )}

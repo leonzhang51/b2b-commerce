@@ -2,6 +2,138 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.72](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.72) (2025-08-13)
+
+### [0.1.71](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.71) (2025-08-13)
+
+### [0.1.70](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.70) (2025-08-13)
+
+### [0.1.69](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.69) (2025-08-13)
+
+### [0.1.68](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.68) (2025-08-13)
+
+### [0.1.67](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.67) (2025-08-13)
+
+### [0.1.66](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.66) (2025-08-13)
+
+### [0.1.65](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.65) (2025-08-13)
+
+### [0.1.64](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.64) (2025-08-13)
+
+### [0.1.63](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.63) (2025-08-13)
+
+### [0.1.62](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.62) (2025-08-13)
+
+### [0.1.61](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.61) (2025-08-13)
+
+### [0.1.60](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.60) (2025-08-13)
+
+### [0.1.59](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.59) (2025-08-13)
+
+### [0.1.58](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.58) (2025-08-13)
+
+### [0.1.57](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.57) (2025-08-13)
+
+### [0.1.56](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.56) (2025-08-13)
+
+### [0.1.55](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.55) (2025-08-13)
+
+### [0.1.54](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.54) (2025-08-13)
+
+### [0.1.53](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.53) (2025-08-13)
+
+### [0.1.52](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.52) (2025-08-13)
+
+### [0.1.51](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.51) (2025-08-13)
+
+### [0.1.50](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.50) (2025-08-13)
+
+### [0.1.49](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.49) (2025-08-13)
+
+### [0.1.48](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.48) (2025-08-13)
+
+### [0.1.47](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.47) (2025-08-13)
+
+### [0.1.46](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.46) (2025-08-13)
+
+### [0.1.45](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.45) (2025-08-13)
+
+### [0.1.44](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.44) (2025-08-13)
+
+### [0.1.43](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.43) (2025-08-13)
+
+### [0.1.42](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.42) (2025-08-13)
+
+### [0.1.41](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.41) (2025-08-13)
+
+### [0.1.40](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.40) (2025-08-13)
+
+### [0.1.39](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.39) (2025-08-13)
+
+### [0.1.38](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.38) (2025-08-13)
+
+### [0.1.37](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.37) (2025-08-13)
+
+### [0.1.36](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.36) (2025-08-13)
+
+### [0.1.35](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.35) (2025-08-13)
+
+### [0.1.34](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.34) (2025-08-13)
+
+### [0.1.33](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.33) (2025-08-13)
+
+### [0.1.32](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.32) (2025-08-13)
+
+### [0.1.31](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.31) (2025-08-13)
+
+### [0.1.30](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.30) (2025-08-13)
+
+### [0.1.29](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.29) (2025-08-13)
+
+### [0.1.28](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.28) (2025-08-13)
+
+### [0.1.27](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.27) (2025-08-13)
+
+### [0.1.26](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.26) (2025-08-13)
+
+### [0.1.25](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.25) (2025-08-13)
+
+### [0.1.24](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.24) (2025-08-13)
+
+### [0.1.23](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.23) (2025-08-13)
+
+### [0.1.22](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.22) (2025-08-13)
+
+### [0.1.21](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.21) (2025-08-13)
+
+### [0.1.20](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.20) (2025-08-13)
+
+### [0.1.19](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.19) (2025-08-13)
+
+### [0.1.18](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.18) (2025-08-13)
+
+### [0.1.17](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.17) (2025-08-13)
+
+### [0.1.16](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.16) (2025-08-13)
+
+### [0.1.15](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.15) (2025-08-13)
+
+### [0.1.14](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.14) (2025-08-13)
+
+### [0.1.13](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.13) (2025-08-13)
+
+### [0.1.12](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.12) (2025-08-13)
+
+### [0.1.11](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.11) (2025-08-13)
+
+### [0.1.10](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.9...v0.1.10) (2025-08-13)
+
+### [0.1.8](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.7...v0.1.8) (2025-08-12)
+
+### Chores
+
+- **release:** 0.1.8 ([0cdb1ed](https://github.com/leonzhang51/b2b-commerce/commit/0cdb1edfb3901c1d3a684ab2c4b86fae0dfd7032))
+
 ### [0.1.9](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.7...v0.1.9) (2025-08-13)
 
 ### Features

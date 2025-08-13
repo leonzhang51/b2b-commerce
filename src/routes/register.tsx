@@ -2,7 +2,7 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { supabase } from '@/lib/supabase'
+import { useRegisterUser } from '@/hooks/useRegisterUser'
 
 export function RegisterPage() {
   const [email, setEmail] = useState('')
@@ -14,60 +14,22 @@ export function RegisterPage() {
   const [jobTitle, setJobTitle] = useState('')
   const [department, setDepartment] = useState('')
   const [tradeType, setTradeType] = useState('contractor')
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+
+  const { register, loading, error, success } = useRegisterUser()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
-    setSuccess(false)
-    // NOTE: 'role' is a required column in users table. Default to 'buyer'.
-    const user_metadata = {
-      first_name: firstName,
-      last_name: lastName,
-      company,
-      phone,
-      job_title: jobTitle,
-      department,
-      trade_type: tradeType,
-      role: 'buyer',
-    }
-    const result = await supabase.auth.signUp({
+    await register({
       email,
       password,
-      options: { data: user_metadata },
+      firstName,
+      lastName,
+      company,
+      phone,
+      jobTitle,
+      department,
+      tradeType,
     })
-    if (result.error) {
-      setError(result.error.message)
-    } else {
-      // Insert user profile into public.users if user is returned
-      const user = result.data.user
-      if (user) {
-        // Insert user profile with default role 'buyer'
-        const { error: profileError } = await supabase.from('users').insert([
-          {
-            id: user.id,
-            email: user.email,
-            first_name: firstName,
-            last_name: lastName,
-            company,
-            phone,
-            job_title: jobTitle,
-            department,
-            trade_type: tradeType,
-            role: 'buyer',
-            created_at: new Date().toISOString(),
-          },
-        ])
-        if (profileError) {
-          setError(
-            'Registered, but failed to save profile: ' + profileError.message,
-          )
-          return
-        }
-      }
-      setSuccess(true)
-    }
   }
 
   return (
@@ -144,8 +106,8 @@ export function RegisterPage() {
             Check your email to confirm registration.
           </div>
         )}
-        <Button type="submit" className="w-full">
-          Register
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Registering...' : 'Register'}
         </Button>
       </form>
       <div className="mt-4 text-sm">

@@ -55,6 +55,88 @@ export function Component({ children, title, onAction }: ComponentProps) {
 }
 ```
 
+### Separation of Concerns & Custom Hooks
+
+**CRITICAL**: Components should never access Supabase directly. Always use custom hooks for business logic.
+
+#### ❌ Bad Pattern - Direct Supabase Access
+
+```typescript
+function RegisterForm() {
+  const supabase = useSupabase()
+
+  const handleSubmit = async (data) => {
+    // ❌ Business logic in component
+    const { error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+    })
+    // ❌ Complex error handling in component
+  }
+}
+```
+
+#### ✅ Good Pattern - Custom Hook for Business Logic
+
+```typescript
+// Custom hook handles all business logic
+function useRegisterUser() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+
+  const register = async (data: RegisterInput) => {
+    setLoading(true)
+    setError(null)
+    setSuccess(false)
+
+    try {
+      // All Supabase operations in hook
+      const supabase = useSupabase()
+      const { error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+      })
+      if (error) throw error
+      setSuccess(true)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return { register, loading, error, success }
+}
+
+// Component only handles UI and calls hook
+function RegisterForm() {
+  const { register, loading, error, success } = useRegisterUser()
+
+  const handleSubmit = async (data) => {
+    await register(data) // Simple delegation to hook
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {error && <div className="text-red-500">{error}</div>}
+      {success && <div className="text-green-600">Success!</div>}
+      <button disabled={loading}>
+        {loading ? 'Registering...' : 'Register'}
+      </button>
+    </form>
+  )
+}
+```
+
+#### Custom Hook Pattern Requirements
+
+- Return consistent interface: `{ action, loading, error, success }`
+- Handle all async operations and state management
+- Include comprehensive error handling
+- Reset state appropriately between operations
+- Place in `src/hooks/` directory
+
 ### Data Fetching & State Management Patterns
 
 #### Server State (TanStack Query)

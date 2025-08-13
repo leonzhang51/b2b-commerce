@@ -8,16 +8,18 @@ The B2B Commerce application uses a hybrid approach for state management:
 
 - **Zustand**: For client-side, shared state (cart, UI state, todos, etc.)
 - **TanStack Query**: For server state (data from APIs/Supabase)
+- **Custom Hooks**: For encapsulating business logic and Supabase operations
 - **React State**: For local component state (`useState`, `useReducer`)
 
 ## Architecture
 
 ### State Management Layers
 
-1. **Server State (TanStack Query)**
+1. **Server State (TanStack Query + Custom Hooks)**
    - User authentication data
    - Product catalog
    - Order history
+   - User management operations
    - Any data that comes from or needs to be synced with the server
 
 2. **Global Client State (Zustand)**
@@ -30,6 +32,67 @@ The B2B Commerce application uses a hybrid approach for state management:
    - Form inputs
    - Component-specific UI state
    - Temporary values that don't need to be shared
+
+## Custom Hooks for Business Logic
+
+### Pattern: Separation of Concerns
+
+To maintain clean architecture, we use custom hooks to encapsulate business logic and keep components focused on presentation. This pattern ensures:
+
+- **Single Responsibility**: Components handle UI, hooks handle business logic
+- **Testability**: Business logic can be tested independently
+- **Reusability**: Hooks can be shared across components
+- **Maintainability**: Changes to business logic don't affect component structure
+
+### Available Business Logic Hooks
+
+#### User Management
+
+- `useUserData(userId)`: Fetch single user data
+- `useUpdateUser()`: Update user information and roles
+- `useRegisterUser()`: Handle user registration
+- `useResetPassword()`: Handle password reset functionality
+
+#### Company Management
+
+- `useCompaniesWithUsers()`: Fetch companies that have users
+- `useCompanyUsers(companyId)`: Fetch users for a specific company
+
+#### Authentication
+
+- `useAuth()`: Handle authentication state and operations
+
+### Example Usage
+
+```typescript
+// ❌ Anti-pattern: Direct Supabase usage in component
+function EditUserComponent({ user }) {
+  const [loading, setLoading] = useState(false)
+
+  const handleSave = async (userData) => {
+    setLoading(true)
+    const { error } = await supabase
+      .from('users')
+      .update(userData)
+      .eq('id', user.id)
+    setLoading(false)
+    // Handle error, success, etc.
+  }
+
+  return <form onSubmit={handleSave}>...</form>
+}
+
+// ✅ Correct pattern: Using custom hook
+function EditUserComponent({ user }) {
+  const { updateUser, loading, error, success } = useUpdateUser()
+
+  const handleSave = async (userData) => {
+    await updateUser(userData)
+  }
+
+  return <form onSubmit={handleSave}>...</form>
+}
+```
 
 ## Available Stores
 

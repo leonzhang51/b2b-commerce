@@ -1,7 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ResetPasswordPage } from '../routes/reset-password'
-import { supabase } from '@/lib/supabase'
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
@@ -10,17 +9,31 @@ vi.mock('@tanstack/react-router', () => ({
   createFileRoute: vi.fn((_path: string) => (config: any) => config),
 }))
 
-vi.mock('@/lib/supabase', () => {
-  const resetPasswordForEmail = vi.fn(() => Promise.resolve({ error: null }))
-  return {
-    supabase: {
-      auth: { resetPasswordForEmail },
-    },
-  }
-})
+// Create a mutable mock state object that tests can modify
+const mockHookState = {
+  loading: false,
+  error: null as string | null,
+  success: false,
+}
+
+const mockResetPassword = vi.fn()
+
+vi.mock('@/hooks/useResetPassword', () => ({
+  useResetPassword: () => ({
+    resetPassword: mockResetPassword,
+    loading: mockHookState.loading,
+    error: mockHookState.error,
+    success: mockHookState.success,
+  }),
+}))
 
 beforeEach(() => {
   vi.resetAllMocks()
+  mockResetPassword.mockReset()
+  // Reset mock state to defaults
+  mockHookState.loading = false
+  mockHookState.error = null
+  mockHookState.success = false
 })
 
 describe('Reset Password Page', () => {
@@ -40,26 +53,35 @@ describe('Reset Password Page', () => {
     fireEvent.click(screen.getByRole('button', { name: /send reset link/i }))
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/check your email for a password reset link/i),
-      ).toBeInTheDocument()
+      expect(mockResetPassword).toHaveBeenCalledTimes(1)
     })
-    expect(supabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(
-      'user@example.com',
-    )
+    expect(mockResetPassword).toHaveBeenCalledWith('user@example.com')
   })
 
-  it('shows error when reset request fails', async () => {
-    ;(supabase.auth.resetPasswordForEmail as any).mockResolvedValueOnce({
-      error: { message: 'No user found' },
-    })
+  it('shows success message when hook returns success state', () => {
+    // Set mock state to success
+    mockHookState.success = true
+
     render(<ResetPasswordPage />)
-    fireEvent.change(screen.getByPlaceholderText(/email/i), {
-      target: { value: 'missing@example.com' },
-    })
-    fireEvent.click(screen.getByRole('button', { name: /send reset link/i }))
-    await waitFor(() => {
-      expect(screen.getByText(/no user found/i)).toBeInTheDocument()
-    })
+    expect(
+      screen.getByText(/check your email for a password reset link/i),
+    ).toBeInTheDocument()
+  })
+
+  it('shows error when hook returns error state', () => {
+    // Set mock state to error
+    mockHookState.error = 'No user found'
+
+    render(<ResetPasswordPage />)
+    expect(screen.getByText(/no user found/i)).toBeInTheDocument()
+  })
+
+  it('shows loading state when hook is loading', () => {
+    // Set mock state to loading
+    mockHookState.loading = true
+
+    render(<ResetPasswordPage />)
+    const button = screen.getByRole('button', { name: /sending.../i })
+    expect(button).toBeDisabled()
   })
 })
