@@ -12,10 +12,44 @@
 - Automated changelog and versioning (standard-version + Husky)
 - Testing best practices and instructions
 - Security and TypeScript guidelines
+- Core user authentication & role-based access foundations (see breakdown below)
 
-## 🟡 Features To Be Done
+## 🟡 Feature Breakdown & Status
 
-User authentication and roles - [ ] Implement registration, login, and logout UI (sign up, sign in, sign out) - [ ] Integrate Supabase Auth for user management - [ ] Add email confirmation and password reset flows - [ ] Store additional user profile fields (name, company, phone, etc.) in public.users - [ ] Sync Supabase auth.users with public.users via trigger or app logic - [ ] Implement role assignment (admin, manager, buyer, etc.) in public.users or a roles table - [ ] Add role-based route protection (RequireRole component) - [ ] Add admin UI for managing users and roles - [ ] Enforce Row Level Security (RLS) in Supabase for data access by role - [ ] Test all authentication and authorization flows
+### User Authentication & Roles
+
+- [x] Implement registration, login, and logout UI (sign up, sign in, sign out)
+- [x] Integrate Supabase Auth for user management
+- [x] Add password reset flow (email confirmation uses Supabase default; custom UI optional)
+- [x] Store additional user profile fields (name, company, phone, etc.) in `public.users`
+- [x] Sync Supabase `auth.users` with `public.users` (SQL + app fetch logic)
+- [x] Implement role assignment (`role` + `permissions`) in `public.users`
+- [x] Add role-based route protection (`RequireRole` component)
+- [x] Add admin UI for managing users and roles
+- [x] Enforce Row Level Security (RLS) in Supabase for data access by role
+- [ ] Expand automated tests for full auth & authorization flows
+  - [x] RequireRole access tests
+  - [x] Basic form render tests (login, register, reset password)
+  - [x] Registration submission success & error handling
+  - [x] Password reset success path assertion
+  - [x] Admin role change & permission regression test
+  - [x] Negative access tests (non-admin hitting admin route)
+
+### Upcoming (Select Next Focus)
+
+Pick next initiative (move chosen items into active list):
+
+- Product catalog enhancements (bulk import/export, pagination, image optimization)
+- Category UX (drag & drop reorder, breadcrumbs, category-level role restrictions)
+- Cart & pricing (persistent cart, role-based pricing tiers, discount codes)
+- Search & filtering (full-text search, faceted filters, debounced suggestions)
+- Admin improvements (audit log, user impersonation, soft delete/restore)
+- Security hardening (refresh token rotation, session timeout UI, email verification banner)
+- Testing & quality (MSW API mocking, broader mutation tests, E2E smoke flow)
+- Performance (query cache audit, bundle splitting, error boundaries & logging)
+- Deployment readiness (env schema validation, health/status route, Supabase migration automation)
+
+## 📋 Remaining General Backlog
 
 - Shopping cart functionality (branch: feat/cart)
 - Order management and checkout flow
