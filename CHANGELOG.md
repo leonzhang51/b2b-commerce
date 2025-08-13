@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.11](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.10...v0.1.11) (2025-08-13)
+
 ### [0.1.10](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.9...v0.1.10) (2025-08-13)
 
 ### [0.1.8](https://github.com/leonzhang51/b2b-commerce/compare/v0.1.7...v0.1.8) (2025-08-12)
