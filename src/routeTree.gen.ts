@@ -24,9 +24,11 @@ import { Route as EditUserIdRouteImport } from './routes/edit-user.$id'
 import { Route as DemoDbChatRouteImport } from './routes/demo.db-chat'
 import { ServerRoute as McpServerRouteImport } from './routes/mcp'
 import { ServerRoute as DemoDbChatApiServerRouteImport } from './routes/demo.db-chat-api'
+import { ServerRoute as ApiProductsServerRouteImport } from './routes/api/products'
 import { ServerRoute as ApiMcpTodosServerRouteImport } from './routes/api.mcp-todos'
 import { ServerRoute as ApiDemoTqTodosServerRouteImport } from './routes/api.demo-tq-todos'
 import { ServerRoute as ApiDemoNamesServerRouteImport } from './routes/api.demo-names'
+import { ServerRoute as ApiDebugProductsServerRouteImport } from './routes/api/debug-products'
 
 const rootServerRouteImport = createServerRootRoute()
 
@@ -95,6 +97,11 @@ const DemoDbChatApiServerRoute = DemoDbChatApiServerRouteImport.update({
   path: '/demo/db-chat-api',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiProductsServerRoute = ApiProductsServerRouteImport.update({
+  id: '/api/products',
+  path: '/api/products',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
 const ApiMcpTodosServerRoute = ApiMcpTodosServerRouteImport.update({
   id: '/api/mcp-todos',
   path: '/api/mcp-todos',
@@ -108,6 +115,11 @@ const ApiDemoTqTodosServerRoute = ApiDemoTqTodosServerRouteImport.update({
 const ApiDemoNamesServerRoute = ApiDemoNamesServerRouteImport.update({
   id: '/api/demo-names',
   path: '/api/demo-names',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiDebugProductsServerRoute = ApiDebugProductsServerRouteImport.update({
+  id: '/api/debug-products',
+  path: '/api/debug-products',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 
@@ -207,55 +219,69 @@ export interface RootRouteChildren {
 }
 export interface FileServerRoutesByFullPath {
   '/mcp': typeof McpServerRoute
+  '/api/debug-products': typeof ApiDebugProductsServerRoute
   '/api/demo-names': typeof ApiDemoNamesServerRoute
   '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
   '/api/mcp-todos': typeof ApiMcpTodosServerRoute
+  '/api/products': typeof ApiProductsServerRoute
   '/demo/db-chat-api': typeof DemoDbChatApiServerRoute
 }
 export interface FileServerRoutesByTo {
   '/mcp': typeof McpServerRoute
+  '/api/debug-products': typeof ApiDebugProductsServerRoute
   '/api/demo-names': typeof ApiDemoNamesServerRoute
   '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
   '/api/mcp-todos': typeof ApiMcpTodosServerRoute
+  '/api/products': typeof ApiProductsServerRoute
   '/demo/db-chat-api': typeof DemoDbChatApiServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
   '/mcp': typeof McpServerRoute
+  '/api/debug-products': typeof ApiDebugProductsServerRoute
   '/api/demo-names': typeof ApiDemoNamesServerRoute
   '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
   '/api/mcp-todos': typeof ApiMcpTodosServerRoute
+  '/api/products': typeof ApiProductsServerRoute
   '/demo/db-chat-api': typeof DemoDbChatApiServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
   fullPaths:
     | '/mcp'
+    | '/api/debug-products'
     | '/api/demo-names'
     | '/api/demo-tq-todos'
     | '/api/mcp-todos'
+    | '/api/products'
     | '/demo/db-chat-api'
   fileServerRoutesByTo: FileServerRoutesByTo
   to:
     | '/mcp'
+    | '/api/debug-products'
     | '/api/demo-names'
     | '/api/demo-tq-todos'
     | '/api/mcp-todos'
+    | '/api/products'
     | '/demo/db-chat-api'
   id:
     | '__root__'
     | '/mcp'
+    | '/api/debug-products'
     | '/api/demo-names'
     | '/api/demo-tq-todos'
     | '/api/mcp-todos'
+    | '/api/products'
     | '/demo/db-chat-api'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
   McpServerRoute: typeof McpServerRoute
+  ApiDebugProductsServerRoute: typeof ApiDebugProductsServerRoute
   ApiDemoNamesServerRoute: typeof ApiDemoNamesServerRoute
   ApiDemoTqTodosServerRoute: typeof ApiDemoTqTodosServerRoute
   ApiMcpTodosServerRoute: typeof ApiMcpTodosServerRoute
+  ApiProductsServerRoute: typeof ApiProductsServerRoute
   DemoDbChatApiServerRoute: typeof DemoDbChatApiServerRoute
 }
 
@@ -356,6 +382,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof DemoDbChatApiServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/products': {
+      id: '/api/products'
+      path: '/api/products'
+      fullPath: '/api/products'
+      preLoaderRoute: typeof ApiProductsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/mcp-todos': {
       id: '/api/mcp-todos'
       path: '/api/mcp-todos'
@@ -375,6 +408,13 @@ declare module '@tanstack/react-start/server' {
       path: '/api/demo-names'
       fullPath: '/api/demo-names'
       preLoaderRoute: typeof ApiDemoNamesServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/debug-products': {
+      id: '/api/debug-products'
+      path: '/api/debug-products'
+      fullPath: '/api/debug-products'
+      preLoaderRoute: typeof ApiDebugProductsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
   }
@@ -409,9 +449,11 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 const rootServerRouteChildren: RootServerRouteChildren = {
   McpServerRoute: McpServerRoute,
+  ApiDebugProductsServerRoute: ApiDebugProductsServerRoute,
   ApiDemoNamesServerRoute: ApiDemoNamesServerRoute,
   ApiDemoTqTodosServerRoute: ApiDemoTqTodosServerRoute,
   ApiMcpTodosServerRoute: ApiMcpTodosServerRoute,
+  ApiProductsServerRoute: ApiProductsServerRoute,
   DemoDbChatApiServerRoute: DemoDbChatApiServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport

@@ -7,6 +7,8 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 
 import { Toasts } from '../components/Toasts.tsx'
 import { Header } from '../components/Header.tsx' // Ensure this path is correct
+import { ImpersonationProvider } from '../contexts/ImpersonationContext.tsx'
+import { ImpersonationBanner } from '../components/ImpersonationBanner.tsx'
 
 import TanStackQueryLayout from '../integrations/tanstack-query/layout.tsx'
 
@@ -72,13 +74,16 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body suppressHydrationWarning={true}>
-        {/* Import or define the Header component */}
-        <Header />
-        {children}
-        {/* Toast notifications */}
-        <Toasts />
-        <TanStackRouterDevtools />
-        <TanStackQueryLayout />
+        <ImpersonationProvider>
+          {/* Import or define the Header component */}
+          <Header />
+          <ImpersonationBanner />
+          {children}
+          {/* Toast notifications */}
+          <Toasts />
+          <TanStackRouterDevtools />
+          <TanStackQueryLayout />
+        </ImpersonationProvider>
         <Scripts />
       </body>
     </html>

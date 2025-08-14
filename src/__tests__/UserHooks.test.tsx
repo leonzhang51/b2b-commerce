@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useUserData } from '@/hooks/useUserData'
 import { useUpdateUser } from '@/hooks/useUpdateUser'
 import { useCompaniesWithUsers, useCompanyUsers } from '@/hooks/useCompanyUsers'
@@ -22,9 +23,35 @@ vi.mock('@/lib/supabase', () => ({
           })),
         })),
       })),
+      insert: vi.fn(() => ({
+        select: vi.fn(() => ({
+          single: vi.fn(),
+        })),
+      })),
     })),
   },
 }))
+
+// Mock useAuth
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: { id: 'admin-user', role: 'admin' },
+    loading: false,
+  }),
+}))
+
+// Helper to render hooks with QueryClient
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  })
+  return ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  )
+}
 
 describe('useUserData', () => {
   it('should fetch user data successfully', async () => {
@@ -100,39 +127,109 @@ describe('useUpdateUser', () => {
     }
 
     const mockSupabase = await import('@/lib/supabase')
-    vi.mocked(mockSupabase.supabase.from).mockReturnValue({
-      update: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          select: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({ data: mockUser, error: null }),
+    vi
+      .mocked(mockSupabase.supabase.from)
+      .mockImplementation((table: string) => {
+        if (table === 'users') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                single: vi
+                  .fn()
+                  .mockResolvedValue({ data: mockUser, error: null }),
+              }),
+            }),
+            update: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                select: vi.fn().mockReturnValue({
+                  single: vi
+                    .fn()
+                    .mockResolvedValue({ data: mockUser, error: null }),
+                }),
+              }),
+            }),
+          }
+        }
+        return {
+          insert: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: vi
+                .fn()
+                .mockResolvedValue({ data: { id: 'audit-1' }, error: null }),
+            }),
           }),
-        }),
-      }),
-    } as any)
+        }
+      }) as any
 
-    const { result } = renderHook(() => useUpdateUser())
+    const { result } = renderHook(() => useUpdateUser(), {
+      wrapper: createWrapper(),
+    })
 
     const updatedUser = await result.current.updateUser(mockUser)
 
     expect(updatedUser).toEqual(mockUser)
-    // Note: The success and error states might not be immediately available due to React's batching
-    // In a real application, you would wait for these states to update
   })
 
   it('should update user role successfully', async () => {
-    const mockSupabase = await import('@/lib/supabase')
-    vi.mocked(mockSupabase.supabase.from).mockReturnValue({
-      update: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue({ error: null }),
-      }),
-    } as any)
+    const mockUser = {
+      id: '1',
+      first_name: 'Test',
+      last_name: 'User',
+      company_id: 'comp1',
+      phone: '123-456-7890',
+      job_title: 'Manager',
+      department: 'Sales',
+      trade_type: 'general' as const,
+      permissions: ['admin'],
+      is_active: true,
+      role: 'buyer',
+    }
 
-    const { result } = renderHook(() => useUpdateUser())
+    const mockSupabase = await import('@/lib/supabase')
+    vi
+      .mocked(mockSupabase.supabase.from)
+      .mockImplementation((table: string) => {
+        if (table === 'users') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({
+                  data: { ...mockUser, role: 'buyer' },
+                  error: null,
+                }),
+              }),
+            }),
+            update: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                select: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({
+                    data: { ...mockUser, role: 'manager' },
+                    error: null,
+                  }),
+                }),
+              }),
+            }),
+          }
+        }
+        return {
+          insert: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: { id: 'audit-1' },
+                error: null,
+              }),
+            }),
+          }),
+        }
+      }) as any
+
+    const { result } = renderHook(() => useUpdateUser(), {
+      wrapper: createWrapper(),
+    })
 
     const success = await result.current.updateUserRole('1', 'manager')
 
     expect(success).toBe(true)
-    // Note: Hook state updates might not be immediately available
   })
 })
 

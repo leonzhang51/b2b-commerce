@@ -45,12 +45,26 @@
 - [x] Cart UI/UX polish (minicart, sidebar, badge)
 - [x] Cart tests (add/remove, quantity, clear, checkout)
 
+### Recently Completed ✅
+
+- [x] **Search & filtering** (full-text search, faceted filters, debounced suggestions)
+  - Full-text search across product name, description, SKU, tags
+  - Faceted filters (price range, stock status, categories, brands)
+  - Debounced search input with autocomplete dropdown
+  - Search suggestions and recent searches
+  - Advanced search filters and saved searches
+
+- [x] **Admin improvements** (audit log, user impersonation, soft delete/restore)
+  - Comprehensive audit log for all admin actions
+  - User impersonation for support/testing (with security controls)
+  - Soft delete/restore for users and other entities
+  - Enhanced admin dashboard with better navigation
+  - Bulk operations for user management
+
 ### Upcoming (Select Next Focus)
 
 Pick next initiative (move chosen items into active list):
 
-- Search & filtering (full-text search, faceted filters, debounced suggestions)
-- Admin improvements (audit log, user impersonation, soft delete/restore)
 - Security hardening (refresh token rotation, session timeout UI, email verification banner)
 - Testing & quality (MSW API mocking, broader mutation tests, E2E smoke flow)
 - Performance (query cache audit, bundle splitting, error boundaries & logging)

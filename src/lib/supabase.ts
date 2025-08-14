@@ -37,6 +37,8 @@ export interface Company {
   readonly is_active: boolean
   readonly created_at: string
   readonly updated_at: string
+  readonly deleted_at?: string | null
+  readonly deleted_by?: string | null
 }
 
 export interface User {
@@ -59,6 +61,8 @@ export interface User {
   readonly last_login?: string
   readonly created_at: string
   readonly updated_at: string
+  readonly deleted_at?: string | null
+  readonly deleted_by?: string | null
 }
 
 export interface Category {
@@ -104,4 +108,31 @@ export interface ShoppingList {
   readonly shared_with?: ReadonlyArray<string>
   readonly created_at: string
   readonly updated_at: string
+}
+
+export interface AuditLog {
+  readonly id: string
+  readonly user_id: string // Who performed the action
+  readonly target_user_id?: string // User being acted upon (for user management actions)
+  readonly action:
+    | 'create'
+    | 'update'
+    | 'delete'
+    | 'login'
+    | 'logout'
+    | 'role_change'
+    | 'impersonate_start'
+    | 'impersonate_end'
+  readonly entity_type:
+    | 'user'
+    | 'company'
+    | 'product'
+    | 'category'
+    | 'order'
+    | 'system'
+  readonly entity_id?: string // ID of the entity being acted upon
+  readonly old_values?: Record<string, any> // Previous values (for updates)
+  readonly new_values?: Record<string, any> // New values (for creates/updates)
+  readonly metadata?: Record<string, any> // Additional context (IP, user agent, etc.)
+  readonly created_at: string
 }

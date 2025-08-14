@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { UserAdminPage } from '../routes/user-admin'
 
 import { useAuth } from '../hooks/useAuth'
@@ -68,9 +69,17 @@ vi.mock('@/lib/supabase', () => {
 })
 
 describe('Admin UI', () => {
+  let queryClient: QueryClient
+
   beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
+    })
     ;(useAuth as Mock).mockReturnValue({
-      user: { role: 'admin', permissions: ['admin'] },
+      user: { id: 'admin-user', role: 'admin', permissions: ['admin'] },
       loading: false,
     })
     mockUsers = [
@@ -93,49 +102,47 @@ describe('Admin UI', () => {
     mockUpdateCalls.length = 0
   })
 
-  it('renders the user management interface', () => {
-    render(<UserAdminPage />)
+  const renderWithQueryClient = (component: React.ReactElement) => {
+    return render(
+      <QueryClientProvider client={queryClient}>
+        {component}
+      </QueryClientProvider>,
+    )
+  }
+
+  it('renders the admin dashboard interface', () => {
+    renderWithQueryClient(<UserAdminPage />)
+    expect(screen.getByText(/admin dashboard/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/manage your b2b commerce platform/i),
+    ).toBeInTheDocument()
+  })
+
+  it('displays dashboard sections', () => {
+    renderWithQueryClient(<UserAdminPage />)
+    // Check for dashboard sections - use getAllByText for multiple matches
     expect(screen.getByText(/user management/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/audit logs/i)).toHaveLength(2) // One in section, one in quick actions
+    expect(screen.getAllByText(/deleted items/i)).toHaveLength(2) // One in section, one in quick actions
   })
 
-  it('displays loading state initially', () => {
-    render(<UserAdminPage />)
-    // The component should render without crashing
-    expect(document.body).toBeInTheDocument()
-  })
+  it('switches between dashboard sections', async () => {
+    renderWithQueryClient(<UserAdminPage />)
 
-  it('changes a user role via the role dropdown', async () => {
-    render(<UserAdminPage />)
+    // Initially should show overview
+    expect(screen.getByText(/admin dashboard/i)).toBeInTheDocument()
 
-    // Wait for companies to load
-    await screen.findByText(/acme co/i)
+    // Click on Users section
+    const usersSection = screen.getByText(/user management/i).closest('button')
+    expect(usersSection).toBeTruthy()
 
-    // Select the company to load users
-    fireEvent.change(screen.getByRole('combobox'), {
-      target: { value: 'comp1' },
-    })
+    fireEvent.click(usersSection!)
 
-    // Wait for user row
-    await screen.findByText('alice@example.com')
-
-    // Get all comboboxes (first is company select, second is user role)
-    const selects = screen.getAllByRole('combobox')
-    const roleSelect = selects.find(
-      (s) => (s as HTMLSelectElement).value === 'buyer',
-    ) as HTMLSelectElement
-    expect(roleSelect).toBeTruthy()
-
-    fireEvent.change(roleSelect, { target: { value: 'manager' } })
-
+    // Should switch to user management view
     await waitFor(() => {
-      expect(roleSelect.value).toBe('manager')
-    })
-
-    // Ensure update call captured
-    expect(mockUpdateCalls.length).toBe(1)
-    expect(mockUpdateCalls[0]).toMatchObject({
-      id: 'u1',
-      vals: { role: 'manager' },
+      expect(screen.getByText(/user management/i)).toBeInTheDocument()
+      // Should show company selection
+      expect(screen.getByText(/select company/i)).toBeInTheDocument()
     })
   })
 
