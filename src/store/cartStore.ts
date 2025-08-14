@@ -1,10 +1,26 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { CartItem, CartState } from '@/types/cart'
+import type { CartState } from '@/types/cart'
+import type { Role } from '@/lib/rolePricing'
+import { calculateRoleBasedPrice } from '@/lib/rolePricing'
+import {
+  applyDiscount,
+  findDiscountCode,
+  isDiscountCodeValid,
+} from '@/lib/discountCodes'
+
+interface AddToCartInput {
+  id: string
+  productId: string
+  name: string
+  price: number
+  imageUrl?: string
+  quantity?: number
+}
 
 interface CartStore extends CartState {
   // Cart actions
-  addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void
+  addItem: (item: AddToCartInput, role: Role) => void
   removeItem: (id: string) => void
   updateQuantity: (id: string, quantity: number) => void
   clearCart: () => void
@@ -33,69 +49,54 @@ export const useCartStore = create<CartStore>()(
       discountPercent: 0,
       discountedTotal: 0,
 
-      addItem: (newItem) => {
+      addItem: (product, role) => {
         const { items } = get()
         const existingItem = items.find(
-          (item) => item.productId === newItem.productId,
+          (item) => item.productId === product.productId,
         )
-
+        const price = calculateRoleBasedPrice(product.price, role)
         if (existingItem) {
-          // Update quantity if item already exists
           set((state) => {
             const updatedItems = state.items.map((item) =>
-              item.productId === newItem.productId
-                ? { ...item, quantity: item.quantity + (newItem.quantity || 1) }
+              item.productId === product.productId
+                ? {
+                    ...item,
+                    quantity: item.quantity + 1,
+                    totalPrice: (item.quantity + 1) * price,
+                  }
                 : item,
             )
-            let discountedTotal = updatedItems.reduce(
-              (sum, item) => sum + item.price * item.quantity,
+            const totalItems = updatedItems.reduce(
+              (sum, item) => sum + item.quantity,
               0,
             )
-            if (state.discountPercent) {
-              discountedTotal =
-                discountedTotal * (1 - state.discountPercent / 100)
-            }
-            return {
-              items: updatedItems,
-              totalItems: updatedItems.reduce(
-                (sum, item) => sum + item.quantity,
-                0,
-              ),
-              totalPrice: updatedItems.reduce(
-                (sum, item) => sum + item.price * item.quantity,
-                0,
-              ),
-              discountedTotal,
-            }
+            const totalPrice = updatedItems.reduce(
+              (sum, item) => sum + item.totalPrice,
+              0,
+            )
+            return { items: updatedItems, totalItems, totalPrice }
           })
         } else {
-          // Add new item
-          const itemToAdd: CartItem = {
-            ...newItem,
-            quantity: newItem.quantity || 1,
-          }
           set((state) => {
-            const updatedItems = [...state.items, itemToAdd]
-            let discountedTotal = updatedItems.reduce(
-              (sum, item) => sum + item.price * item.quantity,
+            const newItem = {
+              id: product.id,
+              productId: product.productId,
+              name: product.name,
+              price,
+              quantity: product.quantity ?? 1,
+              totalPrice: price * (product.quantity ?? 1),
+              imageUrl: product.imageUrl,
+            }
+            const updatedItems = [...state.items, newItem]
+            const totalItems = updatedItems.reduce(
+              (sum, item) => sum + item.quantity,
               0,
             )
-            if (state.discountPercent) {
-              discountedTotal =
-                discountedTotal * (1 - state.discountPercent / 100)
-            }
-            return {
-              items: updatedItems,
-              totalItems: updatedItems.reduce(
-                (sum, item) => sum + item.quantity,
-                0,
-              ),
-              totalPrice: updatedItems.reduce(
-                (sum, item) => sum + item.price * item.quantity,
-                0,
-              ),
-              discountedTotal,
-            }
+            const totalPrice = updatedItems.reduce(
+              (sum, item) => sum + item.totalPrice,
+              0,
+            )
+            return { items: updatedItems, totalItems, totalPrice }
           })
         }
       },
@@ -192,16 +193,22 @@ export const useCartStore = create<CartStore>()(
         return items.some((item) => item.productId === productId)
       },
 
-      applyDiscountCode: (code) => {
-        // Simple mock: 'SAVE10' = 10%, 'SAVE20' = 20%
-        let percent = 0
-        if (code === 'SAVE10') percent = 10
-        if (code === 'SAVE20') percent = 20
+      applyDiscountCode: (code: string) => {
+        const discount = findDiscountCode(code)
+        if (!discount || !isDiscountCodeValid(discount)) {
+          set({
+            discountCode: undefined,
+            discountPercent: 0,
+            discountedTotal: 0,
+          })
+          return
+        }
         set((state) => {
-          const discountedTotal = state.totalPrice * (1 - percent / 100)
+          const discountedTotal = applyDiscount(state.totalPrice, discount)
           return {
             discountCode: code,
-            discountPercent: percent,
+            discountPercent:
+              discount.type === 'percent' ? discount.value : undefined,
             discountedTotal,
           }
         })

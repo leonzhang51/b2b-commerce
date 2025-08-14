@@ -1,11 +1,8 @@
 import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
-import { useAuth } from '@/hooks/useAuth'
 import { ConnectionTest } from '@/components/ConnectionTest'
 import { CategoryNavigation } from '@/components/CategoryNavigation'
 import { ProductGrid } from '@/components/ProductGrid'
-import { ProductSearch } from '@/components/ProductSearch'
-import { CartButton, CartSidebar } from '@/components/CartComponents'
+import { CartSidebar } from '@/components/CartComponents'
 
 export function B2BCommercePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -14,13 +11,6 @@ export function B2BCommercePage() {
   const handleCategorySelect = (categoryId: string | null) => {
     setSelectedCategory(categoryId)
     setSearchQuery('') // Clear search when selecting a category
-  }
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query)
-    if (query) {
-      setSelectedCategory(null) // Clear category when searching
-    }
   }
 
   return (

@@ -39,11 +39,11 @@
 
 ### Cart & Pricing (Active)
 
-- [ ] Persistent cart (localStorage or Supabase sync)
-- [ ] Role-based pricing tiers (e.g., admin, manager, buyer)
-- [ ] Discount code support
-- [ ] Cart UI/UX polish (minicart, sidebar, badge)
-- [ ] Cart tests (add/remove, quantity, clear, checkout)
+- [x] Persistent cart (localStorage or Supabase sync)
+- [x] Role-based pricing tiers (e.g., admin, manager, buyer)
+- [x] Discount code support
+- [x] Cart UI/UX polish (minicart, sidebar, badge)
+- [x] Cart tests (add/remove, quantity, clear, checkout)
 
 ### Upcoming (Select Next Focus)
 

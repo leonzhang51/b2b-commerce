@@ -4,6 +4,7 @@ export interface CartItem {
   readonly name: string
   readonly price: number
   readonly quantity: number
+  readonly totalPrice: number // Added totalPrice property
   readonly imageUrl?: string
 }
 

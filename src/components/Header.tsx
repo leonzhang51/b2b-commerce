@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { CartButton } from '@/components/CartComponents'
+import { MiniCartDropdown } from '@/components/CartComponents'
 import { ProductSearch } from '@/components/ProductSearch'
 
 import { useAuth } from '@/hooks/useAuth'
@@ -8,13 +8,7 @@ import { useAuth } from '@/hooks/useAuth'
 export function Header() {
   const { user, signOut } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
   const isAdmin = user && user.role === 'admin'
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query)
-    // Optionally: trigger navigation or global search state here
-  }
 
   const navLinks = [
     { to: '/', label: 'Home' },
@@ -22,6 +16,10 @@ export function Header() {
   ]
   if (isAdmin) {
     navLinks.push({ to: '/user-admin', label: 'User Admin' })
+  }
+
+  const handleSearch = (_query: string) => {
+    // Optionally: trigger navigation or global search state here
   }
 
   return (
@@ -70,7 +68,7 @@ export function Header() {
           </div>
         ))}
         <div className="flex items-center gap-2 px-2">
-          <CartButton />
+          <MiniCartDropdown />
           <Link
             to="/cart"
             className="text-blue-600 hover:underline font-medium"

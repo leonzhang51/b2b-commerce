@@ -10,6 +10,8 @@ export default [
       'prettier.config.js',
       'tailwind.config.js',
       'eslint.config.js',
+      '.output/**',
+      '.nitro/**',
     ],
   },
   {
