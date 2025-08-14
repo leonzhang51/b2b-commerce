@@ -127,39 +127,31 @@ describe('useUpdateUser', () => {
     }
 
     const mockSupabase = await import('@/lib/supabase')
-    vi
-      .mocked(mockSupabase.supabase.from)
-      .mockImplementation((table: string) => {
-        if (table === 'users') {
-          return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                single: vi
-                  .fn()
-                  .mockResolvedValue({ data: mockUser, error: null }),
-              }),
-            }),
-            update: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                select: vi.fn().mockReturnValue({
-                  single: vi
-                    .fn()
-                    .mockResolvedValue({ data: mockUser, error: null }),
-                }),
-              }),
-            }),
-          }
-        }
-        return {
-          insert: vi.fn().mockReturnValue({
+    vi.mocked(mockSupabase.supabase.from).mockImplementation((() => {
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({ data: mockUser, error: null }),
+          }),
+        }),
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
             select: vi.fn().mockReturnValue({
               single: vi
                 .fn()
-                .mockResolvedValue({ data: { id: 'audit-1' }, error: null }),
+                .mockResolvedValue({ data: mockUser, error: null }),
             }),
           }),
-        }
-      }) as any
+        }),
+        insert: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            single: vi
+              .fn()
+              .mockResolvedValue({ data: { id: 'audit-1' }, error: null }),
+          }),
+        }),
+      }
+    }) as any)
 
     const { result } = renderHook(() => useUpdateUser(), {
       wrapper: createWrapper(),
@@ -186,42 +178,36 @@ describe('useUpdateUser', () => {
     }
 
     const mockSupabase = await import('@/lib/supabase')
-    vi
-      .mocked(mockSupabase.supabase.from)
-      .mockImplementation((table: string) => {
-        if (table === 'users') {
-          return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                single: vi.fn().mockResolvedValue({
-                  data: { ...mockUser, role: 'buyer' },
-                  error: null,
-                }),
-              }),
+    vi.mocked(mockSupabase.supabase.from).mockImplementation((() => {
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: { ...mockUser, role: 'buyer' },
+              error: null,
             }),
-            update: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                select: vi.fn().mockReturnValue({
-                  single: vi.fn().mockResolvedValue({
-                    data: { ...mockUser, role: 'manager' },
-                    error: null,
-                  }),
-                }),
-              }),
-            }),
-          }
-        }
-        return {
-          insert: vi.fn().mockReturnValue({
+          }),
+        }),
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
             select: vi.fn().mockReturnValue({
               single: vi.fn().mockResolvedValue({
-                data: { id: 'audit-1' },
+                data: { ...mockUser, role: 'manager' },
                 error: null,
               }),
             }),
           }),
-        }
-      }) as any
+        }),
+        insert: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({
+              data: { id: 'audit-1' },
+              error: null,
+            }),
+          }),
+        }),
+      }
+    }) as any)
 
     const { result } = renderHook(() => useUpdateUser(), {
       wrapper: createWrapper(),

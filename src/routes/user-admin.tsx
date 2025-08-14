@@ -11,6 +11,7 @@ import { ImpersonationControls } from '@/components/ImpersonationControls'
 import { DeletedEntitiesManager } from '@/components/DeletedEntitiesManager'
 import { AdminDashboard } from '@/components/AdminDashboard'
 import { BulkOperations } from '@/components/BulkOperations'
+import { SecurityDashboard } from '@/components/SecurityDashboard'
 import { useCompaniesWithUsers, useCompanyUsers } from '@/hooks/useCompanyUsers'
 import { useUpdateUser } from '@/hooks/useUpdateUser'
 import { useSoftDelete } from '@/hooks/useSoftDelete'
@@ -249,6 +250,13 @@ function UserAdminPage() {
           {activeSection === 'deleted' && (
             <div>
               <DeletedEntitiesManager entityType="user" title="Deleted Users" />
+            </div>
+          )}
+
+          {/* Security Section */}
+          {activeSection === 'security' && (
+            <div>
+              <SecurityDashboard />
             </div>
           )}
         </div>

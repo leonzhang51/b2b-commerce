@@ -3,6 +3,8 @@ export interface AuthUser {
   email: string
   first_name?: string
   last_name?: string
+  full_name?: string
+  email_confirmed_at?: string
   permissions?: Array<string>
   role?: 'admin' | 'manager' | 'buyer' | 'guest'
 }

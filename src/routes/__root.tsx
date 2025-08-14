@@ -9,6 +9,9 @@ import { Toasts } from '../components/Toasts.tsx'
 import { Header } from '../components/Header.tsx' // Ensure this path is correct
 import { ImpersonationProvider } from '../contexts/ImpersonationContext.tsx'
 import { ImpersonationBanner } from '../components/ImpersonationBanner.tsx'
+import { SessionTimeoutModal } from '../components/SessionTimeoutModal.tsx'
+import { EmailVerificationBanner } from '../components/EmailVerificationBanner.tsx'
+import { SecurityWrapper } from '../components/SecurityWrapper.tsx'
 
 import TanStackQueryLayout from '../integrations/tanstack-query/layout.tsx'
 
@@ -74,16 +77,21 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body suppressHydrationWarning={true}>
-        <ImpersonationProvider>
-          {/* Import or define the Header component */}
-          <Header />
-          <ImpersonationBanner />
-          {children}
-          {/* Toast notifications */}
-          <Toasts />
-          <TanStackRouterDevtools />
-          <TanStackQueryLayout />
-        </ImpersonationProvider>
+        <SecurityWrapper>
+          <ImpersonationProvider>
+            {/* Import or define the Header component */}
+            <Header />
+            <ImpersonationBanner />
+            <EmailVerificationBanner />
+            {children}
+            {/* Security components */}
+            <SessionTimeoutModal />
+            {/* Toast notifications */}
+            <Toasts />
+            <TanStackRouterDevtools />
+            <TanStackQueryLayout />
+          </ImpersonationProvider>
+        </SecurityWrapper>
         <Scripts />
       </body>
     </html>

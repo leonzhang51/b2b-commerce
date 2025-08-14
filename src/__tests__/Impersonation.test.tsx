@@ -49,7 +49,7 @@ describe('ImpersonationControls', () => {
     trade_type: 'general' as const,
     permissions: [],
     is_active: true,
-    role: 'buyer',
+    role: 'buyer' as const,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }
