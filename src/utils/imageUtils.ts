@@ -47,17 +47,14 @@ export async function compressImageFileAsync(
         quality,
       )
     }
-    img.onerror = (e) => reject(new Error('Image load error'))
+    img.onerror = (_e) => reject(new Error('Image load error'))
     img.src = URL.createObjectURL(file)
   })
 }
 /**
  * Generate srcSet for responsive/product images (WebP + fallback)
  */
-export function getProductImageSrcSet(
-  src?: string,
-  fallback = '/placeholder-product.svg',
-): string | undefined {
+export function getProductImageSrcSet(src?: string): string | undefined {
   if (!src) return undefined
   // Assume images are stored as .jpg or .png, and .webp is available at same path
   const base = src.replace(/\.(jpg|jpeg|png)$/i, '')

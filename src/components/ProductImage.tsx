@@ -38,9 +38,7 @@ export function ProductImage({
 
   // Determine the image source to use
   const imageSrc = imageError ? fallbackSrc : getImageSrc(src, fallbackSrc)
-  const srcSet = !imageError
-    ? getProductImageSrcSet(src, fallbackSrc)
-    : undefined
+  const srcSet = !imageError ? getProductImageSrcSet(src) : undefined
 
   return (
     <div className="relative">

@@ -1,11 +1,22 @@
 import { useState } from 'react'
+import { Link } from '@tanstack/react-router'
+import type { Product } from '@/lib/supabase'
 import { useProducts } from '@/hooks/useSupabase'
 import { Button } from '@/components/ui/button'
 import { ProductImage } from '@/components/ProductImage'
+import { useAuth } from '@/hooks/useAuth'
 
 interface ProductGridProps {
   readonly categoryId?: string | null
   readonly searchQuery?: string
+}
+
+function getRolePrice(product: Product, role: string | undefined): number {
+  // Example: price tiers by role
+  if (role === 'admin') return product.price * 0.9 // 10% off for admin
+  if (role === 'manager') return product.price * 0.95 // 5% off for manager
+  if (role === 'buyer') return product.price // base price
+  return product.price // guest or unknown
 }
 
 export function ProductGrid({ categoryId, searchQuery }: ProductGridProps) {
@@ -119,55 +130,64 @@ interface ProductCardProps {
 }
 
 function ProductCard({ product }: ProductCardProps) {
+  const { user } = useAuth()
+  const price = getRolePrice(product, user?.role)
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-      {/* Product Image */}
-      <div className="aspect-square bg-gray-100">
-        <ProductImage
-          src={product.image_url}
-          alt={product.name || 'Product image'}
-          className="w-full h-full object-cover"
-          loading="lazy"
-        />
-      </div>
-
-      {/* Product Info */}
-      <div className="p-4">
-        <div className="mb-2">
-          <p className="text-xs text-gray-500 uppercase tracking-wide">
-            {product.category?.name}
-          </p>
-          <h3 className="font-semibold text-gray-900 line-clamp-2">
-            {product.name}
-          </h3>
+    <Link to={`/product/${product.id}` as any} className="block">
+      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+        {/* Product Image */}
+        <div className="aspect-square bg-gray-100">
+          <ProductImage
+            src={product.image_url}
+            alt={product.name || 'Product image'}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
         </div>
 
-        {product.description && (
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-            {product.description}
-          </p>
-        )}
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-bold text-gray-900">
-              ${product.price.toFixed(2)}
-            </span>
+        {/* Product Info */}
+        <div className="p-4">
+          <div className="mb-2">
+            <p className="text-xs text-gray-500 uppercase tracking-wide">
+              {product.category?.name}
+            </p>
+            <h3 className="font-semibold text-gray-900 line-clamp-2">
+              {product.name}
+            </h3>
           </div>
 
-          <Button size="sm" className="shrink-0">
-            Add to Cart
-          </Button>
-        </div>
-
-        <div className="flex justify-between items-center mt-2">
-          {product.sku && (
-            <p className="text-xs text-gray-400">SKU: {product.sku}</p>
+          {product.description && (
+            <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+              {product.description}
+            </p>
           )}
-          <p className="text-xs text-gray-500">Stock: {product.stock}</p>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-bold text-gray-900">
+                ${price.toFixed(2)}
+              </span>
+              {user?.role && user.role !== 'buyer' && (
+                <span className="ml-2 text-xs text-blue-600 font-semibold">
+                  {user.role} price
+                </span>
+              )}
+            </div>
+
+            <Button size="sm" className="shrink-0">
+              Add to Cart
+            </Button>
+          </div>
+
+          <div className="flex justify-between items-center mt-2">
+            {product.sku && (
+              <p className="text-xs text-gray-400">SKU: {product.sku}</p>
+            )}
+            <p className="text-xs text-gray-500">Stock: {product.stock}</p>
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 

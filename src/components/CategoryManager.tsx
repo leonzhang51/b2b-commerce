@@ -1,9 +1,24 @@
 import { useState } from 'react'
+import {
+  DndContext,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 import type { Category } from '@/lib/supabase'
 import type { CategoryWithHierarchy } from '@/utils/categoryUtils'
 
 import { useCategories } from '@/hooks/useSupabase'
+import { useAuth } from '@/hooks/useAuth'
 import {
   CATEGORY_LEVELS,
   buildCategoryTree,
@@ -16,18 +31,130 @@ export function CategoryManager() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'tree' | 'flat' | 'stats'>('tree')
 
+  // --- Category-level role restrictions state ---
+  const [categoryRoles, setCategoryRoles] = useState<
+    Record<string, Array<string>>
+  >({})
+  const [showAllCategories, setShowAllCategories] = useState(false)
+
   if (isLoading) return <div className="p-4">Loading categories...</div>
   if (error)
     return <div className="p-4 text-red-500">Error loading categories</div>
 
+  const [treeOrder, setTreeOrder] = useState<Array<string>>([])
   const categoryTree = buildCategoryTree(categories)
+  // Keep a flat order of top-level category IDs for drag-and-drop
+  const topLevelIds = categoryTree.map((cat) => cat.id)
+  // If treeOrder is empty or out of sync, update it
+  if (
+    treeOrder.length !== topLevelIds.length ||
+    treeOrder.some((id, i) => id !== topLevelIds[i])
+  ) {
+    setTreeOrder(topLevelIds)
+  }
+
+  const sensors = useSensors(useSensor(PointerSensor))
+
+  function handleDragEnd(event: any) {
+    const { active, over } = event
+    if (active.id !== over?.id) {
+      const oldIndex = treeOrder.indexOf(active.id)
+      const newIndex = treeOrder.indexOf(over.id)
+      const newOrder = arrayMove(treeOrder, oldIndex, newIndex)
+      setTreeOrder(newOrder)
+      // TODO: Persist new order to backend
+    }
+  }
   const validation = validateCategoryHierarchy(categories)
   const stats = getCategoryStats(categories)
+
+  // Helper to get breadcrumb path for selected category
+  function getSelectedBreadcrumb(): Array<{ id: string; name: string }> {
+    if (!selectedCategory) return []
+    // Find the selected node in the tree
+    function findPath(
+      node: CategoryWithHierarchy,
+      path: Array<{ id: string; name: string }>,
+    ): Array<{ id: string; name: string }> {
+      if (node.id === selectedCategory)
+        return [...path, { id: node.id, name: node.name }]
+      if (node.children) {
+        for (const child of node.children) {
+          const res = findPath(child, [
+            ...path,
+            { id: node.id, name: node.name },
+          ])
+          if (res.length) return res
+        }
+      }
+      return []
+    }
+    for (const root of categoryTree) {
+      const res = findPath(root, [])
+      if (res.length) return res
+    }
+    return []
+  }
+
+  const selectedBreadcrumb = getSelectedBreadcrumb()
+
+  // Helper to filter categories by role
+  function getVisibleCategories(
+    allCategories: Array<Category>,
+    userRoles: Array<string>,
+    showAll: boolean,
+  ): Array<Category> {
+    if (showAll) return allCategories
+    // Only show categories where at least one allowed role matches userRoles
+    return allCategories.filter((cat) => {
+      const allowed = categoryRoles[cat.id]
+      if (allowed.length === 0) return true // If no restriction, show
+      return allowed.some((role) => userRoles.includes(role))
+    })
+  }
+
+  // Get user roles from auth
+  const { user } = useAuth()
+  let userRoles: Array<string> = []
+  if (user) {
+    if (user.role) userRoles.push(user.role)
+    if (user.permissions && Array.isArray(user.permissions))
+      userRoles = userRoles.concat(user.permissions)
+  }
+
+  // Use getVisibleCategories to filter categories for display
+  const visibleCategories = getVisibleCategories(
+    categories,
+    userRoles,
+    showAllCategories,
+  )
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-4">Category Management</h1>
+
+        {/* Breadcrumbs */}
+        {selectedBreadcrumb.length > 0 && (
+          <nav className="mb-4 text-sm text-gray-600" aria-label="Breadcrumb">
+            <ol className="flex flex-wrap gap-1 items-center">
+              {selectedBreadcrumb.map((crumb, idx) => (
+                <li key={crumb.id} className="flex items-center">
+                  <button
+                    className={`hover:underline ${idx === selectedBreadcrumb.length - 1 ? 'font-semibold text-blue-700' : ''}`}
+                    onClick={() => setSelectedCategory(crumb.id)}
+                    disabled={idx === selectedBreadcrumb.length - 1}
+                  >
+                    {crumb.name}
+                  </button>
+                  {idx < selectedBreadcrumb.length - 1 && (
+                    <span className="mx-1">/</span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
+        )}
 
         {/* View Mode Selector */}
         <div className="flex gap-2 mb-4">
@@ -76,6 +203,19 @@ export function CategoryManager() {
             </ul>
           </div>
         )}
+
+        {/* Show All Categories Switch */}
+        <div className="flex items-center gap-2 mb-4">
+          <label className="flex items-center gap-1 text-sm">
+            <input
+              type="checkbox"
+              checked={showAllCategories}
+              onChange={() => setShowAllCategories((v) => !v)}
+              className="accent-blue-500"
+            />
+            Show all categories
+          </label>
+        </div>
       </div>
 
       {/* Content based on view mode */}
@@ -84,15 +224,31 @@ export function CategoryManager() {
           <div className="lg:col-span-2">
             <h2 className="text-xl font-semibold mb-4">Category Hierarchy</h2>
             <div className="bg-white border rounded-lg p-4">
-              {categoryTree.map((division) => (
-                <CategoryTreeNode
-                  key={division.id}
-                  category={division}
-                  level={1}
-                  selectedCategory={selectedCategory}
-                  onSelect={setSelectedCategory}
-                />
-              ))}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={treeOrder}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {treeOrder.map((id) => {
+                    const division = categoryTree.find((cat) => cat.id === id)
+                    if (!division) return null
+                    return (
+                      <SortableCategoryTreeNode
+                        key={division.id}
+                        id={division.id}
+                        category={division}
+                        level={1}
+                        selectedCategory={selectedCategory}
+                        onSelect={setSelectedCategory}
+                      />
+                    )
+                  })}
+                </SortableContext>
+              </DndContext>
             </div>
           </div>
 
@@ -100,8 +256,10 @@ export function CategoryManager() {
             <h2 className="text-xl font-semibold mb-4">Category Details</h2>
             {selectedCategory && (
               <CategoryDetails
-                categoryId={selectedCategory}
+                category={categories.find((c) => c.id === selectedCategory)!}
                 categories={categories}
+                categoryRoles={categoryRoles}
+                setCategoryRoles={setCategoryRoles}
               />
             )}
           </div>
@@ -122,7 +280,7 @@ export function CategoryManager() {
                 </tr>
               </thead>
               <tbody>
-                {categories
+                {visibleCategories
                   .sort((a, b) => {
                     const aLevel = a.parent_id ? 2 : 1 // Simplified level calculation
                     const bLevel = b.parent_id ? 2 : 1
@@ -288,63 +446,120 @@ function CategoryTreeNode({
   )
 }
 
-function CategoryDetails({
-  categoryId,
-  categories,
-}: {
-  categoryId: string
-  categories: Array<Category>
-}) {
-  const category = categories.find((c) => c.id === categoryId)
-  if (!category) return null
+interface CategoryDetailsProps {
+  readonly category: Category
+  readonly categories: Array<Category>
+  readonly categoryRoles: Record<string, Array<string>>
+  readonly setCategoryRoles: React.Dispatch<
+    React.SetStateAction<Record<string, Array<string>>>
+  >
+}
 
-  const children = categories.filter((c) => c.parent_id === categoryId)
+function CategoryDetails({
+  category,
+  categories,
+  categoryRoles,
+  setCategoryRoles,
+}: CategoryDetailsProps) {
+  const children = categories.filter((c) => c.parent_id === category.id)
   const parent = category.parent_id
     ? categories.find((c) => c.id === category.parent_id)
     : null
 
-  return (
-    <div className="bg-white border rounded-lg p-4">
-      <h3 className="font-semibold mb-3">{category.name}</h3>
+  // --- Role restriction UI ---
+  const roles = categoryRoles[category.id]
+  const ALL_ROLES = ['admin', 'manager', 'user'] as const
 
-      <div className="space-y-2 text-sm">
-        <div>
-          <span className="text-gray-600">ID:</span>
-          <span className="ml-2 font-mono">{category.id}</span>
+  const handleRoleChange = (role: string) => {
+    const newRoles = roles.includes(role)
+      ? roles.filter((r) => r !== role)
+      : [...roles, role]
+    setCategoryRoles((prev) => ({ ...prev, [category.id]: newRoles }))
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="bg-white border rounded-lg p-4">
+        <h3 className="font-semibold mb-3">{category.name}</h3>
+
+        <div className="space-y-2 text-sm">
+          <div>
+            <span className="text-gray-600">ID:</span>
+            <span className="ml-2 font-mono">{category.id}</span>
+          </div>
+
+          {parent && (
+            <div>
+              <span className="text-gray-600">Parent:</span>
+              <span className="ml-2">{parent.name}</span>
+            </div>
+          )}
+
+          <div>
+            <span className="text-gray-600">Children:</span>
+            <span className="ml-2">{children.length}</span>
+          </div>
+
+          <div>
+            <span className="text-gray-600">Created:</span>
+            <span className="ml-2">
+              {new Date(category.created_at).toLocaleDateString()}
+            </span>
+          </div>
         </div>
 
-        {parent && (
-          <div>
-            <span className="text-gray-600">Parent:</span>
-            <span className="ml-2">{parent.name}</span>
+        {children.length > 0 && (
+          <div className="mt-4">
+            <h4 className="font-medium mb-2">Child Categories:</h4>
+            <ul className="space-y-1">
+              {children.map((child) => (
+                <li key={child.id} className="text-sm text-gray-600">
+                  • {child.name}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
-
-        <div>
-          <span className="text-gray-600">Children:</span>
-          <span className="ml-2">{children.length}</span>
-        </div>
-
-        <div>
-          <span className="text-gray-600">Created:</span>
-          <span className="ml-2">
-            {new Date(category.created_at).toLocaleDateString()}
-          </span>
-        </div>
       </div>
 
-      {children.length > 0 && (
-        <div className="mt-4">
-          <h4 className="font-medium mb-2">Child Categories:</h4>
-          <ul className="space-y-1">
-            {children.map((child) => (
-              <li key={child.id} className="text-sm text-gray-600">
-                • {child.name}
-              </li>
-            ))}
-          </ul>
+      <div>
+        <div className="font-semibold text-sm mb-1">Allowed Roles</div>
+        <div className="flex gap-3">
+          {ALL_ROLES.map((role) => (
+            <label key={role} className="flex items-center gap-1">
+              <input
+                type="checkbox"
+                checked={roles.includes(role)}
+                onChange={() => handleRoleChange(role)}
+                className="accent-blue-500"
+              />
+              <span className="capitalize">{role}</span>
+            </label>
+          ))}
         </div>
-      )}
+      </div>
+    </div>
+  )
+}
+
+// Sortable wrapper for top-level categories
+function SortableCategoryTreeNode(props: any) {
+  const { id } = props
+  const sortable = useSortable({ id })
+  const style = {
+    transform: CSS.Transform.toString(sortable.transform),
+    transition: sortable.transition,
+    opacity: sortable.isDragging ? 0.5 : 1,
+    background: sortable.isDragging ? '#e0e7ff' : undefined,
+  }
+  return (
+    <div
+      ref={sortable.setNodeRef}
+      style={style}
+      {...sortable.attributes}
+      {...sortable.listeners}
+    >
+      <CategoryTreeNode {...props} />
     </div>
   )
 }

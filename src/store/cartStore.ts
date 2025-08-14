@@ -11,10 +11,15 @@ interface CartStore extends CartState {
   toggleCart: () => void
   openCart: () => void
   closeCart: () => void
+  applyDiscountCode: (code: string) => void
+  removeDiscountCode: () => void
 
   // Computed properties
   getItemCount: (productId: string) => number
   isInCart: (productId: string) => boolean
+  discountCode?: string
+  discountPercent?: number
+  discountedTotal?: number
 }
 
 export const useCartStore = create<CartStore>()(
@@ -24,6 +29,9 @@ export const useCartStore = create<CartStore>()(
       isOpen: false,
       totalItems: 0,
       totalPrice: 0,
+      discountCode: undefined,
+      discountPercent: 0,
+      discountedTotal: 0,
 
       addItem: (newItem) => {
         const { items } = get()
@@ -39,6 +47,14 @@ export const useCartStore = create<CartStore>()(
                 ? { ...item, quantity: item.quantity + (newItem.quantity || 1) }
                 : item,
             )
+            let discountedTotal = updatedItems.reduce(
+              (sum, item) => sum + item.price * item.quantity,
+              0,
+            )
+            if (state.discountPercent) {
+              discountedTotal =
+                discountedTotal * (1 - state.discountPercent / 100)
+            }
             return {
               items: updatedItems,
               totalItems: updatedItems.reduce(
@@ -49,6 +65,7 @@ export const useCartStore = create<CartStore>()(
                 (sum, item) => sum + item.price * item.quantity,
                 0,
               ),
+              discountedTotal,
             }
           })
         } else {
@@ -59,6 +76,14 @@ export const useCartStore = create<CartStore>()(
           }
           set((state) => {
             const updatedItems = [...state.items, itemToAdd]
+            let discountedTotal = updatedItems.reduce(
+              (sum, item) => sum + item.price * item.quantity,
+              0,
+            )
+            if (state.discountPercent) {
+              discountedTotal =
+                discountedTotal * (1 - state.discountPercent / 100)
+            }
             return {
               items: updatedItems,
               totalItems: updatedItems.reduce(
@@ -69,6 +94,7 @@ export const useCartStore = create<CartStore>()(
                 (sum, item) => sum + item.price * item.quantity,
                 0,
               ),
+              discountedTotal,
             }
           })
         }
@@ -77,6 +103,14 @@ export const useCartStore = create<CartStore>()(
       removeItem: (id) =>
         set((state) => {
           const updatedItems = state.items.filter((item) => item.id !== id)
+          let discountedTotal = updatedItems.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0,
+          )
+          if (state.discountPercent) {
+            discountedTotal =
+              discountedTotal * (1 - state.discountPercent / 100)
+          }
           return {
             items: updatedItems,
             totalItems: updatedItems.reduce(
@@ -87,6 +121,7 @@ export const useCartStore = create<CartStore>()(
               (sum, item) => sum + item.price * item.quantity,
               0,
             ),
+            discountedTotal,
           }
         }),
 
@@ -100,6 +135,14 @@ export const useCartStore = create<CartStore>()(
           const updatedItems = state.items.map((item) =>
             item.id === id ? { ...item, quantity } : item,
           )
+          let discountedTotal = updatedItems.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0,
+          )
+          if (state.discountPercent) {
+            discountedTotal =
+              discountedTotal * (1 - state.discountPercent / 100)
+          }
           return {
             items: updatedItems,
             totalItems: updatedItems.reduce(
@@ -110,6 +153,7 @@ export const useCartStore = create<CartStore>()(
               (sum, item) => sum + item.price * item.quantity,
               0,
             ),
+            discountedTotal,
           }
         })
       },
@@ -119,6 +163,7 @@ export const useCartStore = create<CartStore>()(
           items: [],
           totalItems: 0,
           totalPrice: 0,
+          discountedTotal: 0,
         }),
 
       toggleCart: () =>
@@ -145,6 +190,24 @@ export const useCartStore = create<CartStore>()(
       isInCart: (productId) => {
         const { items } = get()
         return items.some((item) => item.productId === productId)
+      },
+
+      applyDiscountCode: (code) => {
+        // Simple mock: 'SAVE10' = 10%, 'SAVE20' = 20%
+        let percent = 0
+        if (code === 'SAVE10') percent = 10
+        if (code === 'SAVE20') percent = 20
+        set((state) => {
+          const discountedTotal = state.totalPrice * (1 - percent / 100)
+          return {
+            discountCode: code,
+            discountPercent: percent,
+            discountedTotal,
+          }
+        })
+      },
+      removeDiscountCode: () => {
+        set({ discountCode: undefined, discountPercent: 0, discountedTotal: 0 })
       },
     }),
     {

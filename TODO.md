@@ -37,13 +37,18 @@
   - [x] Admin role change & permission regression test
   - [x] Negative access tests (non-admin hitting admin route)
 
+### Cart & Pricing (Active)
+
+- [ ] Persistent cart (localStorage or Supabase sync)
+- [ ] Role-based pricing tiers (e.g., admin, manager, buyer)
+- [ ] Discount code support
+- [ ] Cart UI/UX polish (minicart, sidebar, badge)
+- [ ] Cart tests (add/remove, quantity, clear, checkout)
+
 ### Upcoming (Select Next Focus)
 
 Pick next initiative (move chosen items into active list):
 
-- Product catalog enhancements (bulk import/export, pagination, image optimization)
-- Category UX (drag & drop reorder, breadcrumbs, category-level role restrictions)
-- Cart & pricing (persistent cart, role-based pricing tiers, discount codes)
 - Search & filtering (full-text search, faceted filters, debounced suggestions)
 - Admin improvements (audit log, user impersonation, soft delete/restore)
 - Security hardening (refresh token rotation, session timeout UI, email verification banner)

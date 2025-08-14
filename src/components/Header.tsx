@@ -1,22 +1,24 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
+import { CartButton } from '@/components/CartComponents'
+import { ProductSearch } from '@/components/ProductSearch'
+
 import { useAuth } from '@/hooks/useAuth'
 
 export function Header() {
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const isAdmin = user && user.role === 'admin'
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
+    // Optionally: trigger navigation or global search state here
+  }
 
   const navLinks = [
     { to: '/', label: 'Home' },
-    { to: '/demo/start/server-funcs', label: 'Start - Server Functions' },
-    { to: '/demo/start/api-request', label: 'Start - API Request' },
     { to: '/demo/db-chat', label: 'DB Chat' },
-    { to: '/demo/form/simple', label: 'Simple Form' },
-    { to: '/demo/form/address', label: 'Address Form' },
-    { to: '/demo/mcp-todos', label: 'MCP' },
-    { to: '/demo/tanstack-query', label: 'TanStack Query' },
-    { to: '/demo/table', label: 'TanStack Table' },
   ]
   if (isAdmin) {
     navLinks.push({ to: '/user-admin', label: 'User Admin' })
@@ -24,7 +26,7 @@ export function Header() {
 
   return (
     <header className="p-2 bg-white text-black flex items-center justify-between border-b">
-      <div className="flex items-center">
+      <div className="flex items-center flex-1 min-w-0">
         <button
           className="md:hidden p-2 mr-2"
           aria-label="Open menu"
@@ -44,21 +46,61 @@ export function Header() {
             />
           </svg>
         </button>
-        <span className="font-bold text-lg hidden md:inline">B2B Commerce</span>
+        <Link to="/" className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900">
+            B2B Commerce Platform
+          </h1>
+          <span className="ml-3 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
+            Beta
+          </span>
+        </Link>
+        <div className="flex-1 max-w-lg mx-8">
+          <ProductSearch
+            onSearch={handleSearch}
+            placeholder="Search tools, materials, equipment..."
+          />
+        </div>
       </div>
       <nav
-        className={`flex-col gap-2 items-center w-full md:w-auto md:flex-row md:flex ${menuOpen ? 'flex' : 'hidden'} md:!flex`}
+        className={`flex-col gap-2 items-center md:w-auto md:flex-row md:flex ${menuOpen ? 'flex' : 'hidden'} md:!flex`}
       >
         {navLinks.map((link) => (
-          <div key={link.to} className="px-2 font-bold">
+          <div key={link.to} className="px-1 font-regular text-md">
             <Link to={link.to}>{link.label}</Link>
           </div>
         ))}
-        {user && (
-          <div className="px-2 text-sm text-gray-600">
-            {user.email} ({user.role})
-          </div>
-        )}
+        <div className="flex items-center gap-2 px-2">
+          <CartButton />
+          <Link
+            to="/cart"
+            className="text-blue-600 hover:underline font-medium"
+          >
+            View Cart
+          </Link>
+          {user ? (
+            <button
+              className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300"
+              onClick={signOut}
+            >
+              Sign Out
+            </button>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/register"
+                className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300"
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
+        </div>
       </nav>
     </header>
   )

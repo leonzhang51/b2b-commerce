@@ -5,7 +5,8 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 
-import { Header } from '../components/Header.tsx'
+import { Toasts } from '../components/Toasts.tsx'
+import { Header } from '../components/Header.tsx' // Ensure this path is correct
 
 import TanStackQueryLayout from '../integrations/tanstack-query/layout.tsx'
 
@@ -71,8 +72,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body suppressHydrationWarning={true}>
+        {/* Import or define the Header component */}
         <Header />
         {children}
+        {/* Toast notifications */}
+        <Toasts />
         <TanStackRouterDevtools />
         <TanStackQueryLayout />
         <Scripts />
