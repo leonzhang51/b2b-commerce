@@ -66,17 +66,17 @@
 Pick next initiative (move chosen items into active list):
 
 - Security hardening (refresh token rotation, session timeout UI, email verification banner)
-- Testing & quality (MSW API mocking, broader mutation tests, E2E smoke flow)
-- Performance (query cache audit, bundle splitting, error boundaries & logging)
-- Deployment readiness (env schema validation, health/status route, Supabase migration automation)
-
-## 📋 Remaining General Backlog
-
 - Shopping cart functionality (branch: feat/cart)
 - Order management and checkout flow
 - API endpoints for cart and orders
 - Admin dashboard for product/category management
+
+## 📋 Remaining General Backlog
+
 - Responsive/mobile UI improvements
+- Testing & quality (MSW API mocking, broader mutation tests, E2E smoke flow)
+- Performance (query cache audit, bundle splitting, error boundaries & logging)
+- Deployment readiness (env schema validation, health/status route, Supabase migration automation)
 - E2E tests for critical user flows
 - Performance optimizations (lazy loading, bundle analysis)
 - Accessibility audit and improvements
