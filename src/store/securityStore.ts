@@ -322,7 +322,7 @@ export const useSecurityStore = create<SecurityState>()(
 
 // Computed selectors for better performance
 export const useIsEmailVerified = () =>
-  useSecurityStore((state) => {
+  useSecurityStore(() => {
     // This would need to be passed from the auth context or computed differently
     // For now, we'll handle this in the components
     return false

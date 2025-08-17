@@ -48,7 +48,17 @@ vi.mock('@/store/securityStore', () => ({
 }))
 
 // Mock the auth context
-const mockAuthContext = {
+const mockAuthContext: {
+  user: {
+    id: string
+    email: string
+    full_name: string
+    role: string
+    email_confirmed_at: string | null
+  }
+  loading: boolean
+  signOut: any
+} = {
   user: {
     id: 'test-user',
     email: 'test@example.com',
