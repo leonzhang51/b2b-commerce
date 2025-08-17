@@ -45,8 +45,8 @@ export function ProductManager() {
 
   // Fetch all products (no pagination for export)
   const { data: products = [], isLoading } = useProducts({
-    limit: 1000,
-    offset: 0,
+    page: 1,
+    pageSize: 1000,
   })
 
   // Handler for import

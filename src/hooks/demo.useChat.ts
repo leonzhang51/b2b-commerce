@@ -26,11 +26,11 @@ function useStreamConnection(
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
-        for (const line of decoder
+        for (const chunk of decoder
           .decode(value, { stream: true })
           .split('\n')
           .filter((chunk) => chunk.length > 0)) {
-          collection.insert(JSON.parse(line))
+          collection.insert(JSON.parse(chunk))
         }
       }
     }

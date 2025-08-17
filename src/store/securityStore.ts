@@ -152,9 +152,8 @@ export const useSecurityStore = create<SecurityState>()(
         }
 
         const checkSession = () => {
-          const state = get()
           const now = Date.now()
-          const timeSinceLastActivity = now - state.lastActivity
+          const timeSinceLastActivity = now - get().lastActivity
           const timeRemaining = Math.max(
             0,
             getSessionTimeoutMs() - timeSinceLastActivity,
@@ -167,7 +166,7 @@ export const useSecurityStore = create<SecurityState>()(
           }
 
           // Check if session is expired
-          if (isSessionExpired(state)) {
+          if (isSessionExpired(get())) {
             // Log session timeout
             createAuditLog.mutate({
               user_id: user.id,
@@ -187,8 +186,8 @@ export const useSecurityStore = create<SecurityState>()(
 
           // Check if session warning should be shown
           if (
-            shouldShowSessionWarning(state) &&
-            !state.isSessionWarningVisible
+            shouldShowSessionWarning(get()) &&
+            !get().isSessionWarningVisible
           ) {
             set({ isSessionWarningVisible: true })
 
@@ -234,8 +233,7 @@ export const useSecurityStore = create<SecurityState>()(
         }
 
         const handleTokenRefresh = async () => {
-          const state = get()
-          if (shouldRefreshToken(state)) {
+          if (shouldRefreshToken(get())) {
             try {
               const { data, error } = await supabase.auth.refreshSession()
 
@@ -322,7 +320,7 @@ export const useSecurityStore = create<SecurityState>()(
 
 // Computed selectors for better performance
 export const useIsEmailVerified = () =>
-  useSecurityStore(() => {
+  useSecurityStore((_state) => {
     // This would need to be passed from the auth context or computed differently
     // For now, we'll handle this in the components
     return false

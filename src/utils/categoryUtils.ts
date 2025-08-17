@@ -12,7 +12,7 @@ export interface CategoryWithHierarchy extends Category {
 export function buildCategoryTree(
   categories: Array<Category>,
 ): Array<CategoryWithHierarchy> {
-  const categoryMap = new Map<string, CategoryWithHierarchy>()
+  const categoryMap = new Map<number, CategoryWithHierarchy>()
   const rootCategories: Array<CategoryWithHierarchy> = []
 
   // First pass: create map of all categories with mutable properties
@@ -22,14 +22,14 @@ export function buildCategoryTree(
       children: [],
       breadcrumb: [],
     }
-    categoryMap.set(category.id, categoryWithHierarchy)
+    categoryMap.set(category.category_id, categoryWithHierarchy)
   })
 
   // Second pass: build tree structure and paths
   categories.forEach((category) => {
-    const categoryWithHierarchy = categoryMap.get(category.id)!
+    const categoryWithHierarchy = categoryMap.get(category.category_id)!
 
-    if (category.parent_id) {
+    if (category.parent_id != null) {
       const parent = categoryMap.get(category.parent_id)
       if (parent) {
         if (!parent.children) {
@@ -66,11 +66,7 @@ export function getCategoriesByLevel(
   categories: Array<Category>,
   level: 1 | 2 | 3 | 4,
 ): Array<Category> {
-  return categories.filter((cat) =>
-    level === 1
-      ? !cat.parent_id
-      : getAncestorCount(categories, cat.id) === level - 1,
-  )
+  return categories.filter((cat) => cat.level === level)
 }
 
 /**
@@ -78,10 +74,10 @@ export function getCategoriesByLevel(
  */
 function getAncestorCount(
   categories: Array<Category>,
-  categoryId: string,
+  categoryId: number,
 ): number {
-  const category = categories.find((c) => c.id === categoryId)
-  if (!category || !category.parent_id) return 0
+  const category = categories.find((c) => c.category_id === categoryId)
+  if (!category || category.parent_id == null) return 0
 
   return 1 + getAncestorCount(categories, category.parent_id)
 }
@@ -91,12 +87,12 @@ function getAncestorCount(
  */
 export function getCategoryBreadcrumb(
   categories: Array<Category>,
-  categoryId: string,
+  categoryId: number,
 ): Array<string> {
-  const category = categories.find((c) => c.id === categoryId)
+  const category = categories.find((c) => c.category_id === categoryId)
   if (!category) return []
 
-  if (!category.parent_id) return [category.name]
+  if (category.parent_id == null) return [category.name]
 
   return [
     ...getCategoryBreadcrumb(categories, category.parent_id),
@@ -109,13 +105,15 @@ export function getCategoryBreadcrumb(
  */
 export function getDescendantCategories(
   categories: Array<Category>,
-  parentId: string,
+  parentId: number,
 ): Array<Category> {
   const directChildren = categories.filter((c) => c.parent_id === parentId)
   const allDescendants = [...directChildren]
 
   directChildren.forEach((child) => {
-    allDescendants.push(...getDescendantCategories(categories, child.id))
+    allDescendants.push(
+      ...getDescendantCategories(categories, child.category_id),
+    )
   })
 
   return allDescendants
@@ -132,21 +130,21 @@ export function findCategoriesByName(
     .filter((cat) => cat.name.toLowerCase().includes(searchTerm.toLowerCase()))
     .map((cat) => ({
       ...cat,
-      breadcrumb: getCategoryBreadcrumb(categories, cat.id),
-      path: getCategoryBreadcrumb(categories, cat.id).join(' > '),
+      breadcrumb: getCategoryBreadcrumb(categories, cat.category_id),
+      path: getCategoryBreadcrumb(categories, cat.category_id).join(' > '),
     }))
 
   return matchingCategories
 }
 
 /**
- * Category level names for B2B commerce
+ * Category level names for B2B commerce (Home Depot style)
  */
 export const CATEGORY_LEVELS = {
-  1: 'Division',
-  2: 'Department',
-  3: 'Category',
-  4: 'Subcategory',
+  1: 'Department', // e.g., "Appliances", "Tools"
+  2: 'Subcategory', // e.g., "Major Appliances", "Power Tools"
+  3: 'Product Type', // e.g., "Refrigerators", "Drills & Drivers"
+  4: 'Product Group', // e.g., "French Door", "Cordless Drills"
 } as const
 
 /**
@@ -154,7 +152,7 @@ export const CATEGORY_LEVELS = {
  */
 export function getCategoryLevelName(
   categories: Array<Category>,
-  categoryId: string,
+  categoryId: number,
 ): string {
   const level = getAncestorCount(categories, categoryId) + 1
   const levelKey = level as 1 | 2 | 3 | 4
@@ -169,32 +167,32 @@ export function validateCategoryHierarchy(categories: Array<Category>): {
   errors: Array<string>
 } {
   const errors: Array<string> = []
-  const categoryIds = new Set(categories.map((c) => c.id))
+  const categoryIds = new Set(categories.map((c) => c.category_id))
 
   // Check for orphaned categories
   categories.forEach((category) => {
-    if (category.parent_id && !categoryIds.has(category.parent_id)) {
+    if (category.parent_id != null && !categoryIds.has(category.parent_id)) {
       errors.push(
-        `Category "${category.name}" (${category.id}) has non-existent parent: ${category.parent_id}`,
+        `Category "${category.name}" (${category.category_id}) has non-existent parent: ${category.parent_id}`,
       )
     }
   })
 
   // Check for circular references
   categories.forEach((category) => {
-    if (hasCircularReference(categories, category.id)) {
+    if (hasCircularReference(categories, category.category_id)) {
       errors.push(
-        `Category "${category.name}" (${category.id}) has circular reference`,
+        `Category "${category.name}" (${category.category_id}) has circular reference`,
       )
     }
   })
 
   // Check for categories beyond 4 levels
   categories.forEach((category) => {
-    const level = getAncestorCount(categories, category.id) + 1
+    const level = getAncestorCount(categories, category.category_id) + 1
     if (level > 4) {
       errors.push(
-        `Category "${category.name}" (${category.id}) exceeds 4-level limit (level ${level})`,
+        `Category "${category.name}" (${category.category_id}) exceeds 4-level limit (level ${level})`,
       )
     }
   })
@@ -210,13 +208,13 @@ export function validateCategoryHierarchy(categories: Array<Category>): {
  */
 function hasCircularReference(
   categories: Array<Category>,
-  categoryId: string,
-  visited: Set<string> = new Set(),
+  categoryId: number,
+  visited: Set<number> = new Set(),
 ): boolean {
   if (visited.has(categoryId)) return true
 
-  const category = categories.find((c) => c.id === categoryId)
-  if (!category || !category.parent_id) return false
+  const category = categories.find((c) => c.category_id === categoryId)
+  if (!category || category.parent_id == null) return false
 
   visited.add(categoryId)
   return hasCircularReference(categories, category.parent_id, visited)
@@ -234,14 +232,14 @@ export function getCategoryStats(categories: Array<Category>): {
   const byLevel: Record<number, number> = {}
   let maxDepth = 0
   let orphanedCategories = 0
-  const categoryIds = new Set(categories.map((c) => c.id))
+  const categoryIds = new Set(categories.map((c) => c.category_id))
 
   categories.forEach((category) => {
-    const level = getAncestorCount(categories, category.id) + 1
+    const level = getAncestorCount(categories, category.category_id) + 1
     byLevel[level] = (byLevel[level] || 0) + 1
     maxDepth = Math.max(maxDepth, level)
 
-    if (category.parent_id && !categoryIds.has(category.parent_id)) {
+    if (category.parent_id != null && !categoryIds.has(category.parent_id)) {
       orphanedCategories++
     }
   })

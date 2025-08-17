@@ -5,10 +5,10 @@ import { ProductGrid } from '@/components/ProductGrid'
 import { CartSidebar } from '@/components/CartComponents'
 
 export function B2BCommercePage() {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
 
-  const handleCategorySelect = (categoryId: string | null) => {
+  const handleCategorySelect = (categoryId: number | null) => {
     setSelectedCategory(categoryId)
     setSearchQuery('') // Clear search when selecting a category
   }

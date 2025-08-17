@@ -4,8 +4,8 @@ import { useCategoryTree } from '@/hooks/useSupabase'
 import { Button } from '@/components/ui/button'
 
 interface CategoryNavigationProps {
-  readonly onCategorySelect: (categoryId: string | null) => void
-  readonly selectedCategoryId?: string | null
+  readonly onCategorySelect: (categoryId: number | null) => void
+  readonly selectedCategoryId?: number | null
 }
 
 export function CategoryNavigation({
@@ -13,11 +13,11 @@ export function CategoryNavigation({
   selectedCategoryId,
 }: CategoryNavigationProps) {
   const { data: categories, isLoading, error } = useCategoryTree()
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+  const [expandedCategories, setExpandedCategories] = useState<Set<number>>(
     new Set(),
   )
 
-  const toggleExpanded = (categoryId: string) => {
+  const toggleExpanded = (categoryId: number) => {
     setExpandedCategories((prev) => {
       const newSet = new Set(prev)
       if (newSet.has(categoryId)) {
@@ -67,7 +67,7 @@ export function CategoryNavigation({
 
       {categories.map((category) => (
         <CategoryItem
-          key={category.id}
+          key={category.category_id}
           category={category}
           selectedCategoryId={selectedCategoryId}
           expandedCategories={expandedCategories}
@@ -82,10 +82,10 @@ export function CategoryNavigation({
 
 interface CategoryItemProps {
   readonly category: any // We'll type this properly later
-  readonly selectedCategoryId?: string | null
-  readonly expandedCategories: Set<string>
-  readonly onCategorySelect: (categoryId: string) => void
-  readonly onToggleExpanded: (categoryId: string) => void
+  readonly selectedCategoryId?: number | null
+  readonly expandedCategories: Set<number>
+  readonly onCategorySelect: (categoryId: number) => void
+  readonly onToggleExpanded: (categoryId: number) => void
   readonly level: number
 }
 
@@ -98,8 +98,8 @@ function CategoryItem({
   level,
 }: CategoryItemProps) {
   const hasChildren = category.children && category.children.length > 0
-  const isExpanded = expandedCategories.has(category.id)
-  const isSelected = selectedCategoryId === category.id
+  const isExpanded = expandedCategories.has(category.category_id)
+  const isSelected = selectedCategoryId === category.category_id
   const indent = level * 16
 
   return (
@@ -110,7 +110,7 @@ function CategoryItem({
             variant="ghost"
             size="sm"
             className="h-6 w-6 p-0 shrink-0"
-            onClick={() => onToggleExpanded(category.id)}
+            onClick={() => onToggleExpanded(category.category_id)}
           >
             {isExpanded ? (
               <ChevronDownIcon className="h-3 w-3" />
@@ -126,7 +126,7 @@ function CategoryItem({
           variant={isSelected ? 'default' : 'ghost'}
           className="flex-1 justify-start text-sm"
           style={{ paddingLeft: indent + 8 }}
-          onClick={() => onCategorySelect(category.id)}
+          onClick={() => onCategorySelect(category.category_id)}
         >
           {category.name}
         </Button>
@@ -136,7 +136,7 @@ function CategoryItem({
         <div className="ml-6 space-y-1">
           {category.children.map((child: any) => (
             <CategoryItem
-              key={child.id}
+              key={child.category_id}
               category={child}
               selectedCategoryId={selectedCategoryId}
               expandedCategories={expandedCategories}

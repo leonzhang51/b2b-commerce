@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { AlertTriangle, User as UserIcon } from 'lucide-react'
 import type { User } from '@/lib/supabase'
+import type { HomeImprovementProduct } from '@/services/homeImprovementData'
 import { RequireRole } from '@/components/RequireRole'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/button'
@@ -12,6 +13,12 @@ import { DeletedEntitiesManager } from '@/components/DeletedEntitiesManager'
 import { AdminDashboard } from '@/components/AdminDashboard'
 import { BulkOperations } from '@/components/BulkOperations'
 import { SecurityDashboard } from '@/components/SecurityDashboard'
+// import HomeDepotImport from '@/components/admin/HomeDepotImport'
+import { freeDataService } from '@/services/freeDataSources'
+import { csvImportService } from '@/services/csvImportService'
+import { homeImprovementData } from '@/services/homeImprovementData'
+import { webScrapingService } from '@/services/webScrapingService'
+import { supabase } from '@/lib/supabase'
 import { useCompaniesWithUsers, useCompanyUsers } from '@/hooks/useCompanyUsers'
 import { useUpdateUser } from '@/hooks/useUpdateUser'
 import { useSoftDelete } from '@/hooks/useSoftDelete'
@@ -30,6 +37,11 @@ function UserAdminPage() {
   const [activeSection, setActiveSection] = useState<string>('overview')
   const [confirmDelete, setConfirmDelete] = useState<User | null>(null)
   const [selectedUsers, setSelectedUsers] = useState<Array<string>>([])
+  const [importStatus, setImportStatus] = useState<{
+    success: boolean
+    message: string
+    details?: string
+  } | null>(null)
 
   const {
     companies,
@@ -48,6 +60,310 @@ function UserAdminPage() {
 
   const loading = companiesLoading || usersLoading
   const error = companiesError || usersError
+
+  // Import handler functions
+  const handleWebScrapingImport = async (maxProducts: number) => {
+    setImportStatus({
+      success: false,
+      message: 'Starting web scraping...',
+      details: 'Extracting product data from web sources',
+    })
+
+    try {
+      console.log('Starting web scraping import...')
+
+      // First, test database connection
+      const { data: testData, error: testError } = await supabase
+        .from('categories')
+        .select('category_id, name')
+        .limit(1)
+
+      if (testError) {
+        console.error('Database connection test failed:', testError)
+        setImportStatus({
+          success: false,
+          message: 'Database connection failed',
+          details: testError.message,
+        })
+        return
+      }
+
+      console.log('Database connection test passed:', testData)
+
+      // Scrape products from web sources
+      const scrapedProducts =
+        await webScrapingService.scrapeHomeImprovementProducts(maxProducts)
+      console.log('Scraped products:', scrapedProducts.length)
+
+      if (scrapedProducts.length === 0) {
+        setImportStatus({
+          success: false,
+          message: 'No products found',
+          details:
+            'Web scraping did not return any products. Check console for details.',
+        })
+        return
+      }
+
+      setImportStatus({
+        success: false,
+        message: `Scraped ${scrapedProducts.length} products, saving to database...`,
+        details: 'Processing and storing product data',
+      })
+
+      // Save scraped products to database
+      console.log('Starting to save products to database...')
+      const result =
+        await webScrapingService.saveScrapedProducts(scrapedProducts)
+      console.log('Save result:', result)
+
+      setImportStatus({
+        success: result.imported > 0,
+        message:
+          result.imported > 0
+            ? `Successfully scraped and imported ${result.imported} products!`
+            : `Scraping completed but no products were saved. Check console for details.`,
+        details:
+          result.imported > 0
+            ? `Real brands: DEWALT, Milwaukee, Ryobi, Makita, Moen, KOHLER, Behr, Honda, and more`
+            : `${result.total} products were processed but ${result.imported} were saved. Check console logs for errors.`,
+      })
+    } catch (error) {
+      console.error('Web scraping error:', error)
+      setImportStatus({
+        success: false,
+        message: 'Web scraping failed',
+        details:
+          error instanceof Error
+            ? error.message
+            : 'Unknown error occurred during scraping',
+      })
+    }
+  }
+
+  const handleHomeImprovementImport = async (
+    category: 'all' | 'tools' | 'materials',
+  ) => {
+    setImportStatus({
+      success: false,
+      message: 'Importing home improvement products...',
+      details: 'Generating realistic product data',
+    })
+
+    try {
+      let products: Array<HomeImprovementProduct> = []
+
+      if (category === 'all') {
+        products = homeImprovementData.getAllProducts()
+      } else if (category === 'tools') {
+        products = homeImprovementData.getProductsByCategory('Tools')
+      } else {
+        products =
+          homeImprovementData.getProductsByCategory('Building Materials')
+      }
+
+      // Import products to database
+      let imported = 0
+      for (const product of products) {
+        try {
+          // Find or create category
+          let categoryId = 1 // Default category
+          const { data: existingCategory } = await supabase
+            .from('categories')
+            .select('category_id')
+            .eq('name', product.category)
+            .single()
+
+          if (existingCategory) {
+            categoryId = existingCategory.category_id
+          } else {
+            // Create new category
+            const { data: newCategory } = await supabase
+              .from('categories')
+              .insert({
+                name: product.category,
+                level: 1,
+                slug: product.category
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]+/g, '-'),
+                is_active: true,
+                sort_order: 0,
+              })
+              .select()
+              .single()
+
+            if (newCategory) {
+              categoryId = newCategory.category_id
+            }
+          }
+
+          const transformed = homeImprovementData.transformToSchema(
+            product,
+            categoryId,
+          )
+
+          // Insert product
+          const { data } = await supabase
+            .from('products')
+            .insert(transformed.product)
+            .select()
+            .single()
+
+          if (!error && data) {
+            imported++
+
+            // Add image
+            if (transformed.images.length > 0) {
+              await supabase.from('product_images').insert({
+                ...transformed.images[0],
+                product_id: data.product_id,
+              })
+            }
+
+            // Add attributes
+            if (transformed.attributes.length > 0) {
+              const attributesWithProductId = transformed.attributes.map(
+                (attr) => ({
+                  product_id: data.product_id,
+                  attribute_name: attr.name,
+                  attribute_value: attr.value,
+                  attribute_type: attr.type,
+                  is_filterable: attr.is_filterable,
+                  sort_order: 1,
+                }),
+              )
+
+              await supabase
+                .from('product_attributes')
+                .insert(attributesWithProductId)
+            }
+          }
+        } catch (err) {
+          console.error(err)
+        }
+      }
+
+      setImportStatus({
+        success: true,
+        message: `Successfully imported ${imported} home improvement products!`,
+        details: `Categories: ${category === 'all' ? 'Tools, Building Materials, Plumbing, Electrical, Paint, Appliances' : category}`,
+      })
+    } catch (error) {
+      setImportStatus({
+        success: false,
+        message: 'Home improvement import failed',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+  }
+
+  const handleFreeAPIImport = async (
+    source: 'fakestore' | 'dummyjson' | 'all',
+  ) => {
+    setImportStatus({
+      success: false,
+      message: 'Starting import...',
+      details: 'Fetching data from free APIs',
+    })
+
+    try {
+      let products = []
+
+      if (source === 'fakestore') {
+        products = await freeDataService.getFakeStoreProducts()
+      } else if (source === 'dummyjson') {
+        products = await freeDataService.getDummyJSONProducts()
+      } else {
+        products = await freeDataService.getAllFreeProducts()
+      }
+
+      setImportStatus({
+        success: true,
+        message: `Successfully fetched ${products.length} products!`,
+        details: `Source: ${source.toUpperCase()} API - Ready to import to database`,
+      })
+    } catch (error) {
+      setImportStatus({
+        success: false,
+        message: 'Import failed',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+  }
+
+  const handleCSVUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setImportStatus({
+      success: false,
+      message: 'Processing CSV file...',
+      details: 'Reading and parsing data',
+    })
+
+    try {
+      const csvContent = await file.text()
+      const products = csvImportService.parseCSV(csvContent)
+
+      setImportStatus({
+        success: true,
+        message: `Successfully parsed ${products.length} products from CSV!`,
+        details: 'CSV parsing completed - Ready to import to database',
+      })
+    } catch (error) {
+      setImportStatus({
+        success: false,
+        message: 'CSV parsing failed',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+  }
+
+  const downloadSampleCSV = () => {
+    const csvContent = csvImportService.generateSampleCSV()
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'sample-products.csv'
+    a.click()
+    window.URL.revokeObjectURL(url)
+  }
+
+  const handleSampleDataImport = async (count: number) => {
+    setImportStatus({
+      success: false,
+      message: `Generating ${count} sample products...`,
+      details: 'Creating realistic test data',
+    })
+
+    try {
+      // Use the existing populate function
+      const productsPerCategory = Math.ceil(count / 10)
+      const { error } = await supabase.rpc('populate_all_products', {
+        products_per_category: productsPerCategory,
+      })
+
+      if (error) throw error
+
+      setImportStatus({
+        success: true,
+        message: `Successfully generated sample products!`,
+        details: `Created ${productsPerCategory} products per category with realistic data`,
+      })
+    } catch (error) {
+      setImportStatus({
+        success: false,
+        message: 'Sample data generation failed',
+        details:
+          error instanceof Error
+            ? error.message
+            : 'Make sure the populate_all_products function exists in your database',
+      })
+    }
+  }
 
   const handleRoleChange = async (userId: string, newRole: User['role']) => {
     const success = await updateRole(userId, newRole)
@@ -95,6 +411,8 @@ function UserAdminPage() {
               {activeSection === 'users' && 'User Management'}
               {activeSection === 'audit' && 'Audit Logs'}
               {activeSection === 'deleted' && 'Deleted Users'}
+              {activeSection === 'import' && 'Data Import'}
+              {activeSection === 'security' && 'Security Dashboard'}
             </h1>
           </div>
           {/* User Management Section */}
@@ -250,6 +568,184 @@ function UserAdminPage() {
           {activeSection === 'deleted' && (
             <div>
               <DeletedEntitiesManager entityType="user" title="Deleted Users" />
+            </div>
+          )}
+
+          {/* Data Import Section */}
+          {activeSection === 'import' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Web Scraping - NEW FEATURED */}
+                <div className="p-6 bg-red-50 border-2 border-red-300 rounded-lg relative">
+                  <div className="absolute -top-2 -right-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
+                    NEW!
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2 text-red-800">
+                    🕷️ Web Scraping
+                  </h3>
+                  <p className="text-red-700 mb-4 text-sm">
+                    Extract real product data from web sources with authentic
+                    brands and specifications
+                  </p>
+                  <div className="space-y-2">
+                    <button
+                      className="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm font-medium"
+                      onClick={() => handleWebScrapingImport(50)}
+                    >
+                      Scrape 50 Products
+                    </button>
+                    <button
+                      className="w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm"
+                      onClick={() => handleWebScrapingImport(100)}
+                    >
+                      Scrape 100 Products
+                    </button>
+                  </div>
+                </div>
+
+                {/* Home Improvement Products - FEATURED */}
+                <div className="p-6 bg-orange-50 border-2 border-orange-300 rounded-lg relative">
+                  <div className="absolute -top-2 -right-2 bg-orange-500 text-white px-2 py-1 rounded text-xs font-bold">
+                    RECOMMENDED
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2 text-orange-800">
+                    🏠 Home Improvement Products
+                  </h3>
+                  <p className="text-orange-700 mb-4 text-sm">
+                    Realistic home improvement products: tools, building
+                    materials, plumbing, electrical, paint, appliances
+                  </p>
+                  <div className="space-y-2">
+                    <button
+                      className="w-full bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 text-sm font-medium"
+                      onClick={() => handleHomeImprovementImport('all')}
+                    >
+                      Import Home Improvement Catalog (100+ products)
+                    </button>
+                    <button
+                      className="w-full bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 text-sm"
+                      onClick={() => handleHomeImprovementImport('tools')}
+                    >
+                      Tools Only (25+ products)
+                    </button>
+                    <button
+                      className="w-full bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 text-sm"
+                      onClick={() => handleHomeImprovementImport('materials')}
+                    >
+                      Building Materials (20+ products)
+                    </button>
+                  </div>
+                </div>
+
+                {/* Free API Sources */}
+                <div className="p-6 bg-green-50 border border-green-200 rounded-lg">
+                  <h3 className="text-lg font-semibold mb-2 text-green-800">
+                    🆓 General Products
+                  </h3>
+                  <p className="text-green-700 mb-4 text-sm">
+                    Mixed product categories from free APIs (electronics,
+                    clothing, etc.)
+                  </p>
+                  <div className="space-y-2">
+                    <button
+                      className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm"
+                      onClick={() => handleFreeAPIImport('fakestore')}
+                    >
+                      Import from Fake Store API (20 products)
+                    </button>
+                    <button
+                      className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm"
+                      onClick={() => handleFreeAPIImport('dummyjson')}
+                    >
+                      Import from DummyJSON (100 products)
+                    </button>
+                  </div>
+                </div>
+
+                {/* CSV Import */}
+                <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h3 className="text-lg font-semibold mb-2 text-blue-800">
+                    📄 CSV Import
+                  </h3>
+                  <p className="text-blue-700 mb-4 text-sm">
+                    Upload your own product data from CSV files
+                  </p>
+                  <div className="space-y-2">
+                    <input
+                      type="file"
+                      accept=".csv"
+                      onChange={handleCSVUpload}
+                      className="w-full text-sm"
+                    />
+                    <button
+                      className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
+                      onClick={downloadSampleCSV}
+                    >
+                      Download Sample CSV Template
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sample Data */}
+                <div className="p-6 bg-purple-50 border border-purple-200 rounded-lg">
+                  <h3 className="text-lg font-semibold mb-2 text-purple-800">
+                    🎯 Sample Data
+                  </h3>
+                  <p className="text-purple-700 mb-4 text-sm">
+                    Generate realistic sample products for testing
+                  </p>
+                  <div className="space-y-2">
+                    <button
+                      className="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-sm"
+                      onClick={() => handleSampleDataImport(25)}
+                    >
+                      Generate 25 Sample Products
+                    </button>
+                    <button
+                      className="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-sm"
+                      onClick={() => handleSampleDataImport(100)}
+                    >
+                      Generate 100 Sample Products
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Import Status */}
+              {importStatus && (
+                <div
+                  className={`p-4 rounded-lg ${importStatus.success ? 'bg-green-100 border border-green-400' : 'bg-red-100 border border-red-400'}`}
+                >
+                  <p
+                    className={
+                      importStatus.success ? 'text-green-800' : 'text-red-800'
+                    }
+                  >
+                    {importStatus.message}
+                  </p>
+                  {importStatus.details && (
+                    <p className="text-sm mt-2 opacity-75">
+                      {importStatus.details}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Home Depot Option (Disabled) */}
+              <div className="p-6 bg-gray-50 border border-gray-200 rounded-lg opacity-75">
+                <h3 className="text-lg font-semibold mb-2 text-gray-600">
+                  🏠 Home Depot API (Premium)
+                </h3>
+                <p className="text-gray-600 mb-4 text-sm">
+                  Requires API key registration - use free options above instead
+                </p>
+                <button
+                  className="bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed text-sm"
+                  disabled
+                >
+                  Requires API Key
+                </button>
+              </div>
             </div>
           )}
 

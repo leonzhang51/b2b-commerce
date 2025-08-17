@@ -28,7 +28,7 @@ import {
 
 export function CategoryManager() {
   const { data: categories = [], isLoading, error } = useCategories()
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
   const [viewMode, setViewMode] = useState<'tree' | 'flat' | 'stats'>('tree')
 
   // --- Category-level role restrictions state ---
@@ -41,10 +41,10 @@ export function CategoryManager() {
   if (error)
     return <div className="p-4 text-red-500">Error loading categories</div>
 
-  const [treeOrder, setTreeOrder] = useState<Array<string>>([])
+  const [treeOrder, setTreeOrder] = useState<Array<number>>([])
   const categoryTree = buildCategoryTree(categories)
   // Keep a flat order of top-level category IDs for drag-and-drop
-  const topLevelIds = categoryTree.map((cat) => cat.id)
+  const topLevelIds = categoryTree.map((cat) => cat.category_id)
   // If treeOrder is empty or out of sync, update it
   if (
     treeOrder.length !== topLevelIds.length ||
@@ -57,9 +57,12 @@ export function CategoryManager() {
 
   function handleDragEnd(event: any) {
     const { active, over } = event
-    if (active.id !== over?.id) {
-      const oldIndex = treeOrder.indexOf(active.id)
-      const newIndex = treeOrder.indexOf(over.id)
+    // active.id/over.id may be strings from DnD, coerce to number where possible
+    const activeId = Number(active.id)
+    const overId = Number(over?.id)
+    if (activeId && overId && activeId !== overId) {
+      const oldIndex = treeOrder.indexOf(activeId)
+      const newIndex = treeOrder.indexOf(overId)
       const newOrder = arrayMove(treeOrder, oldIndex, newIndex)
       setTreeOrder(newOrder)
       // TODO: Persist new order to backend
@@ -69,20 +72,20 @@ export function CategoryManager() {
   const stats = getCategoryStats(categories)
 
   // Helper to get breadcrumb path for selected category
-  function getSelectedBreadcrumb(): Array<{ id: string; name: string }> {
-    if (!selectedCategory) return []
+  function getSelectedBreadcrumb(): Array<{ id: number; name: string }> {
+    if (selectedCategory == null) return []
     // Find the selected node in the tree
     function findPath(
       node: CategoryWithHierarchy,
-      path: Array<{ id: string; name: string }>,
-    ): Array<{ id: string; name: string }> {
-      if (node.id === selectedCategory)
-        return [...path, { id: node.id, name: node.name }]
+      path: Array<{ id: number; name: string }>,
+    ): Array<{ id: number; name: string }> {
+      if (node.category_id === selectedCategory)
+        return [...path, { id: node.category_id, name: node.name }]
       if (node.children) {
         for (const child of node.children) {
           const res = findPath(child, [
             ...path,
-            { id: node.id, name: node.name },
+            { id: node.category_id, name: node.name },
           ])
           if (res.length) return res
         }
@@ -107,7 +110,7 @@ export function CategoryManager() {
     if (showAll) return allCategories
     // Only show categories where at least one allowed role matches userRoles
     return allCategories.filter((cat) => {
-      const allowed = categoryRoles[cat.id]
+      const allowed = categoryRoles[String(cat.category_id)]
       if (allowed.length === 0) return true // If no restriction, show
       return allowed.some((role) => userRoles.includes(role))
     })
@@ -234,12 +237,14 @@ export function CategoryManager() {
                   strategy={verticalListSortingStrategy}
                 >
                   {treeOrder.map((id) => {
-                    const division = categoryTree.find((cat) => cat.id === id)
+                    const division = categoryTree.find(
+                      (cat) => cat.category_id === id,
+                    )
                     if (!division) return null
                     return (
                       <SortableCategoryTreeNode
-                        key={division.id}
-                        id={division.id}
+                        key={division.category_id}
+                        id={division.category_id}
                         category={division}
                         level={1}
                         selectedCategory={selectedCategory}
@@ -256,7 +261,9 @@ export function CategoryManager() {
             <h2 className="text-xl font-semibold mb-4">Category Details</h2>
             {selectedCategory && (
               <CategoryDetails
-                category={categories.find((c) => c.id === selectedCategory)!}
+                category={
+                  categories.find((c) => c.category_id === selectedCategory)!
+                }
                 categories={categories}
                 categoryRoles={categoryRoles}
                 setCategoryRoles={setCategoryRoles}
@@ -294,9 +301,11 @@ export function CategoryManager() {
 
                     return (
                       <tr
-                        key={category.id}
+                        key={category.category_id}
                         className="border-t hover:bg-gray-50 cursor-pointer"
-                        onClick={() => setSelectedCategory(category.id)}
+                        onClick={() =>
+                          setSelectedCategory(category.category_id)
+                        }
                       >
                         <td className="px-4 py-3 font-medium">
                           {category.name}
@@ -310,7 +319,7 @@ export function CategoryManager() {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-600">
-                          {getBreadcrumb(categories, category.id)}
+                          {getBreadcrumb(categories, category.category_id)}
                         </td>
                       </tr>
                     )
@@ -394,8 +403,8 @@ function CategoryTreeNode({
 }: {
   category: CategoryWithHierarchy
   level: number
-  selectedCategory: string | null
-  onSelect: (id: string) => void
+  selectedCategory: number | null
+  onSelect: (id: number) => void
 }) {
   const [isExpanded, setIsExpanded] = useState(true)
   const hasChildren = category.children && category.children.length > 0
@@ -404,11 +413,11 @@ function CategoryTreeNode({
     <div className={`ml-${(level - 1) * 4}`}>
       <div
         className={`flex items-center py-2 px-3 rounded cursor-pointer hover:bg-gray-50 ${
-          selectedCategory === category.id
+          selectedCategory === category.category_id
             ? 'bg-blue-50 border-l-4 border-blue-500'
             : ''
         }`}
-        onClick={() => onSelect(category.id)}
+        onClick={() => onSelect(category.category_id)}
       >
         {hasChildren && (
           <button
@@ -433,7 +442,7 @@ function CategoryTreeNode({
         <div>
           {category.children?.map((child) => (
             <CategoryTreeNode
-              key={child.id}
+              key={child.category_id}
               category={child}
               level={level + 1}
               selectedCategory={selectedCategory}
@@ -461,20 +470,25 @@ function CategoryDetails({
   categoryRoles,
   setCategoryRoles,
 }: CategoryDetailsProps) {
-  const children = categories.filter((c) => c.parent_id === category.id)
+  const children = categories.filter(
+    (c) => c.parent_id === category.category_id,
+  )
   const parent = category.parent_id
-    ? categories.find((c) => c.id === category.parent_id)
+    ? categories.find((c) => c.category_id === category.parent_id)
     : null
 
   // --- Role restriction UI ---
-  const roles = categoryRoles[category.id]
+  const roles = categoryRoles[String(category.category_id)]
   const ALL_ROLES = ['admin', 'manager', 'user'] as const
 
   const handleRoleChange = (role: string) => {
     const newRoles = roles.includes(role)
       ? roles.filter((r) => r !== role)
       : [...roles, role]
-    setCategoryRoles((prev) => ({ ...prev, [category.id]: newRoles }))
+    setCategoryRoles((prev) => ({
+      ...prev,
+      [String(category.category_id)]: newRoles,
+    }))
   }
 
   return (
@@ -485,7 +499,7 @@ function CategoryDetails({
         <div className="space-y-2 text-sm">
           <div>
             <span className="text-gray-600">ID:</span>
-            <span className="ml-2 font-mono">{category.id}</span>
+            <span className="ml-2 font-mono">{category.category_id}</span>
           </div>
 
           {parent && (
@@ -513,7 +527,7 @@ function CategoryDetails({
             <h4 className="font-medium mb-2">Child Categories:</h4>
             <ul className="space-y-1">
               {children.map((child) => (
-                <li key={child.id} className="text-sm text-gray-600">
+                <li key={child.category_id} className="text-sm text-gray-600">
                   • {child.name}
                 </li>
               ))}
@@ -581,12 +595,13 @@ function getLevelColor(level: number): string {
 
 function getBreadcrumb(
   categories: Array<Category>,
-  categoryId: string,
+  categoryId: number | null | undefined,
 ): string {
-  const category = categories.find((c) => c.id === categoryId)
+  if (categoryId == null) return ''
+  const category = categories.find((c) => c.category_id === categoryId)
   if (!category) return ''
 
-  if (!category.parent_id) return category.name
+  if (category.parent_id == null) return category.name
 
   const parentBreadcrumb = getBreadcrumb(categories, category.parent_id)
   return `${parentBreadcrumb} > ${category.name}`
