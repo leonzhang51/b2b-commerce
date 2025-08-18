@@ -1,6 +1,4 @@
-import { useState } from 'react'
-import { ChevronDownIcon, ChevronRightIcon } from 'lucide-react'
-import { useCategoryTree } from '@/hooks/useSupabase'
+import { useCategories } from '@/hooks/useSupabase'
 import { Button } from '@/components/ui/button'
 
 interface CategoryNavigationProps {
@@ -12,22 +10,7 @@ export function CategoryNavigation({
   onCategorySelect,
   selectedCategoryId,
 }: CategoryNavigationProps) {
-  const { data: categories, isLoading, error } = useCategoryTree()
-  const [expandedCategories, setExpandedCategories] = useState<Set<number>>(
-    new Set(),
-  )
-
-  const toggleExpanded = (categoryId: number) => {
-    setExpandedCategories((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(categoryId)) {
-        newSet.delete(categoryId)
-      } else {
-        newSet.add(categoryId)
-      }
-      return newSet
-    })
-  }
+  const { data: categories, isLoading, error } = useCategories()
 
   if (isLoading) {
     return (
@@ -66,87 +49,17 @@ export function CategoryNavigation({
       </Button>
 
       {categories.map((category) => (
-        <CategoryItem
-          key={category.category_id}
-          category={category}
-          selectedCategoryId={selectedCategoryId}
-          expandedCategories={expandedCategories}
-          onCategorySelect={onCategorySelect}
-          onToggleExpanded={toggleExpanded}
-          level={0}
-        />
-      ))}
-    </div>
-  )
-}
-
-interface CategoryItemProps {
-  readonly category: any // We'll type this properly later
-  readonly selectedCategoryId?: number | null
-  readonly expandedCategories: Set<number>
-  readonly onCategorySelect: (categoryId: number) => void
-  readonly onToggleExpanded: (categoryId: number) => void
-  readonly level: number
-}
-
-function CategoryItem({
-  category,
-  selectedCategoryId,
-  expandedCategories,
-  onCategorySelect,
-  onToggleExpanded,
-  level,
-}: CategoryItemProps) {
-  const hasChildren = category.children && category.children.length > 0
-  const isExpanded = expandedCategories.has(category.category_id)
-  const isSelected = selectedCategoryId === category.category_id
-  const indent = level * 16
-
-  return (
-    <div>
-      <div className="flex items-center">
-        {hasChildren ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0 shrink-0"
-            onClick={() => onToggleExpanded(category.category_id)}
-          >
-            {isExpanded ? (
-              <ChevronDownIcon className="h-3 w-3" />
-            ) : (
-              <ChevronRightIcon className="h-3 w-3" />
-            )}
-          </Button>
-        ) : (
-          <div className="w-6" />
-        )}
-
         <Button
-          variant={isSelected ? 'default' : 'ghost'}
-          className="flex-1 justify-start text-sm"
-          style={{ paddingLeft: indent + 8 }}
+          key={category.category_id}
+          variant={
+            selectedCategoryId === category.category_id ? 'default' : 'ghost'
+          }
+          className="w-full justify-start text-sm"
           onClick={() => onCategorySelect(category.category_id)}
         >
           {category.name}
         </Button>
-      </div>
-
-      {hasChildren && isExpanded && (
-        <div className="ml-6 space-y-1">
-          {category.children.map((child: any) => (
-            <CategoryItem
-              key={child.category_id}
-              category={child}
-              selectedCategoryId={selectedCategoryId}
-              expandedCategories={expandedCategories}
-              onCategorySelect={onCategorySelect}
-              onToggleExpanded={onToggleExpanded}
-              level={level + 1}
-            />
-          ))}
-        </div>
-      )}
+      ))}
     </div>
   )
 }

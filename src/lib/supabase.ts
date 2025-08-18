@@ -80,6 +80,9 @@ export interface Category {
   readonly sort_order: number
   readonly created_at: string
   readonly updated_at: string
+
+  // New flat column from DB (if present)
+  readonly category_name?: string
 }
 
 export interface Product {

@@ -2,19 +2,19 @@ import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { ProductImage } from '@/components/ProductImage'
 import { useAuth } from '@/hooks/useAuth'
-import { ProductSearchBar } from '@/components/ProductSearchBar'
-import { ProductFacetedFilters } from '@/components/ProductFacetedFilters'
-import { ProductFilterChips } from '@/components/ProductFilterChips'
-import { useProductSearch } from '@/hooks/useProductSearch'
+import { useProducts } from '@/hooks/useSupabase'
 
 // Product type for price logic
 interface Product {
   id: string
+  asin?: string
   name: string
-  price: number
-  category?: { name?: string }
+  title?: string
+  price: number | string
+  category?: { name?: string; category_name?: string }
   brand?: string
   image_url?: string
+  imgUrl?: string
   description?: string
   sku?: string
   stock?: number
@@ -22,35 +22,63 @@ interface Product {
 }
 
 function getRolePrice(product: Product, role: string | undefined): number {
-  if (role === 'admin') return product.price * 0.9
-  if (role === 'manager') return product.price * 0.95
-  if (role === 'buyer') return product.price
-  return product.price
+  const basePrice =
+    typeof product.price === 'string'
+      ? parseFloat(product.price)
+      : product.price
+  if (role === 'admin') return basePrice * 0.9
+  if (role === 'manager') return basePrice * 0.95
+  if (role === 'buyer') return basePrice
+  return basePrice
 }
 
-export function ProductGrid() {
-  const { products = [], isLoading, error, query } = useProductSearch()
+interface ProductGridProps {
+  readonly selectedCategoryId?: number | null
+  readonly searchQuery?: string
+}
+
+export function ProductGrid({
+  selectedCategoryId,
+  searchQuery,
+}: ProductGridProps) {
+  const {
+    data: products = [],
+    isLoading,
+    error,
+  } = useProducts({
+    categoryId: selectedCategoryId || undefined,
+    searchTerm: searchQuery || undefined,
+  })
 
   // Debug logging
   console.log('ProductGrid render:', {
     productsCount: products.length,
     isLoading,
     hasError: !!error,
-    query,
+    selectedCategoryId,
+    searchQuery,
     sampleProduct: products[0],
   })
 
   function ProductCard({ product }: { product: Product }) {
     const { user } = useAuth()
     const price = getRolePrice(product, user?.role)
+
+    // Use the mapped fields from our new product schema
+    const productName = product.name || product.title || 'Unnamed Product'
+    const productImage = product.image_url || product.imgUrl
+    const productId = product.id || product.asin
+    const categoryName =
+      product.category?.name || product.category?.category_name
+
     return (
-      <Link to={`/product/${product.id}` as any} className="block">
+      <Link to={`/product/${productId}` as any} className="block">
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
           {/* Product Image */}
           <div className="aspect-square bg-gray-100">
             <ProductImage
-              src={product.image_url}
-              alt={product.name || 'Product image'}
+              src={productImage}
+              alt={productName}
               className="w-full h-full object-cover"
               loading="lazy"
             />
@@ -59,10 +87,10 @@ export function ProductGrid() {
           <div className="p-4">
             <div className="mb-2">
               <p className="text-xs text-gray-500 uppercase tracking-wide">
-                {product.category?.name}
+                {categoryName}
               </p>
               <h3 className="font-semibold text-gray-900 line-clamp-2">
-                {product.name}
+                {productName}
               </h3>
             </div>
             {product.description && (
@@ -119,9 +147,6 @@ export function ProductGrid() {
 
   return (
     <div className="space-y-6">
-      <ProductSearchBar />
-      <ProductFacetedFilters />
-      <ProductFilterChips />
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Array.from({ length: 12 }).map((_, i) => (
@@ -136,7 +161,7 @@ export function ProductGrid() {
       ) : products.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-600 mb-2">No products found</p>
-          {query && (
+          {searchQuery && (
             <p className="text-sm text-gray-500">
               Try adjusting your search terms or browse by category
             </p>
@@ -144,20 +169,9 @@ export function ProductGrid() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.map((product) => {
-            let category: { name?: string } | undefined = undefined
-            if (typeof product.category === 'string') {
-              category = { name: product.category }
-            }
+          {products.map((product: any) => {
             return (
-              <ProductCard
-                key={product.id}
-                product={{
-                  ...product,
-                  price: typeof product.price === 'number' ? product.price : 0,
-                  category,
-                }}
-              />
+              <ProductCard key={product.id || product.asin} product={product} />
             )
           })}
         </div>
@@ -165,5 +179,3 @@ export function ProductGrid() {
     </div>
   )
 }
-// Removed unreachable duplicate return and pagination UI
-// Removed unreachable duplicate return and pagination UI

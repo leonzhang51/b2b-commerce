@@ -73,7 +73,8 @@ export function B2BCommercePage() {
 
               {/* Products Grid */}
               <ProductGrid
-              // ...existing code...
+                selectedCategoryId={selectedCategory}
+                searchQuery={searchQuery}
               />
             </div>
           </div>
