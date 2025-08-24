@@ -18,7 +18,8 @@
     "prepare": "husky",
     "release": "standard-version",
     "changelog": "standard-version --dry-run",
-    "router:generate": "tsr generate ./src/routeTree.gen.ts"
+    "router:generate": "tsr generate ./src/routeTree.gen.ts",
+    "migrate:apply": "./scripts/apply-sql.sh"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

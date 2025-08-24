@@ -29,7 +29,7 @@ Successfully implemented a comprehensive Zustand-based state management system f
 
 ### 5. Legacy Compatibility
 
-- **Updated `mcp-todos.ts`**: Maintains backward compatibility while delegating to Zustand
+- **Todo state migrated to Zustand**: Legacy MCP shims have been removed; use `src/store/todoStore.ts` and `useTodoStore`.
 
 ## Key Features
 
@@ -125,7 +125,7 @@ const checkout = useMutation({
 
 The implementation maintains backward compatibility with the legacy MCP pattern while providing a clear upgrade path:
 
-- Legacy `mcp-todos.ts` functions still work
+- Legacy MCP shim removed; please use the Zustand store API and update any external integrations accordingly.
 - New components should use Zustand stores directly
 - Gradual migration possible without breaking existing code
 

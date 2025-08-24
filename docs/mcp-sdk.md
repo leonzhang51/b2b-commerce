@@ -12,7 +12,7 @@ The MCP SDK is integrated into the codebase to handle tasks such as:
 
 ## Important Note
 
-**The todo functionality in this codebase has been migrated to use Zustand for state management.** The `src/mcp-todos.ts` file now serves as a legacy compatibility layer that delegates to the new Zustand store implementation. For new features, use the Zustand stores directly.
+**The todo functionality in this codebase has been migrated to use Zustand for state management.** Use the `useTodoStore` (Zustand) store for new features and components; legacy MCP shims have been removed.
 
 ## State Management Architecture
 
@@ -59,8 +59,9 @@ function TodoComponent() {
 
 ## Key Files and Directories
 
-1. **`src/mcp-todos.ts`**:
-   - This file contains example usage of the MCP SDK for managing a to-do list.
+1. Todo state:
+
+- Use `src/store/todoStore.ts` and `useTodoStore` (Zustand) for managing todo state. MCP shims have been removed.
 
 2. **`src/utils/mcp-handler.ts`**:
    - A utility file for handling MCP-related operations, such as initializing contexts and managing state.
@@ -120,15 +121,16 @@ function TodoComponent() {
 
 ### Managing To-Do Items with MCP
 
-1. **Define the Context**:
-   - In `src/mcp-todos.ts`, define a context for managing to-do items.
+1. **Define the Context (if needed)**:
 
-   ```typescript
-   const TodoContext = createContext({
-     key: 'todo-context',
-     defaultValue: [],
-   })
-   ```
+- Prefer Zustand stores over React Context for todo state. If a Context is required, implement it in `src/utils/mcp-handler.ts` or component-local code and migrate consumers to use the store.
+
+```typescript
+const TodoContext = createContext({
+  key: 'todo-context',
+  defaultValue: [],
+})
+```
 
 2. **Provide the Context**:
    - Wrap the to-do list component with the context provider.

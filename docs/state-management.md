@@ -323,7 +323,7 @@ src/
 
 ## Migration from Legacy MCP Pattern
 
-The `src/mcp-todos.ts` file serves as a compatibility layer for legacy code. New features should use Zustand stores directly:
+Todo state has migrated to Zustand. New features should use Zustand stores directly:
 
 ```typescript
 // ❌ Legacy pattern (still works but deprecated)

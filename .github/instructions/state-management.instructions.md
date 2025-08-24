@@ -126,4 +126,4 @@ src/
 
 ## Migration Notes
 
-The legacy `src/mcp-todos.ts` file has been updated to use Zustand internally while maintaining backward compatibility. New features should use Zustand stores directly.
+Todo state is now handled by Zustand stores (see `src/store/todoStore.ts`). Legacy MCP shims have been removed; update integrations to use the store directly.
