@@ -2,7 +2,7 @@
 applyTo: '**/*.js,**/*.jsx,**/*.ts,**/*.tsx,**/*.json,**/*.md'
 ---
 
-# TanStack React SPA Copilot Instructions
+# TanStack React SPA Copilot Instructions (now MVP-oriented)
 
 > This project follows the latest TanStack ecosystem for React SPA development. See [tanstack.com](https://tanstack.com/) for updates.
 
@@ -17,16 +17,21 @@ applyTo: '**/*.js,**/*.jsx,**/*.ts,**/*.tsx,**/*.json,**/*.md'
 
 src/
 
-## 📁 Project Structure
+## 📁 Project Structure (MVP)
+
+This repository follows Model-View-Presenter (MVP) patterns layered on top of the existing TanStack stack. Map the current directories to MVP responsibilities:
 
 ```
 src/
-├── app/              # App entry and routes (TanStack Router)
-├── components/       # Reusable components
-│   └── ui/           # Base UI (Radix + Tailwind)
-├── lib/              # Utilities and shared logic
+├── presenters/       # Presenters: orchestrate view logic, call use-cases, mediate between Model and View
+├── views/            # Views: presentational React components (stateless where possible)
+├── models/           # Models: data types, persistence adapters (DB access, API clients)
+├── usecases/         # Application business logic (interactors/service layer)
+├── components/       # Shared UI atoms/molecules (can be used by Views)
+├── lib/              # Utilities and infra (supabase client, feature flags)
+├── hooks/            # Custom React hooks (only view-focused hooks)
 ├── types/            # TypeScript types
-└── __tests__/        # Jest tests
+└── __tests__/        # Tests (unit + integration)
 ```
 
 **Import Alias**: Use `@/*` for all imports from `src/` directory.
@@ -55,9 +60,20 @@ export function Component({ children, title, onAction }: ComponentProps) {
 }
 ```
 
-### Separation of Concerns & Custom Hooks
+### Model-View-Presenter pattern guidance
 
-**CRITICAL**: Components should never access Supabase directly. Always use custom hooks for business logic.
+High-level rules:
+
+- Views are pure presentational React components. They receive props and emit user events via callbacks. No data fetching or side effects in Views.
+- Presenters are the glue: they implement UI state, call use-cases, adapt Model data for Views, and subscribe to stores. Presenters can be React components or custom hooks named `useXPresenter`.
+- Use-cases (interactors) hold business logic and orchestration (e.g., `CheckoutUseCase`, `CartUseCase`). They are pure classes/functions, testable without React.
+- Models encapsulate data access (Supabase/REST) and expose repository-style interfaces (e.g., `ProductsRepository`, `OrdersRepository`). Models are the only code that imports `@supabase/supabase-js`.
+
+Example flow:
+
+View -> Presenter -> Use-case -> Model -> DB/External
+
+This keeps UI code thin and puts business rules in testable, framework-agnostic modules.
 
 #### ❌ Bad Pattern - Direct Supabase Access
 
@@ -129,13 +145,21 @@ function RegisterForm() {
 }
 ```
 
-#### Custom Hook Pattern Requirements
+#### Presenter / Use-case / Model responsibilities
 
-- Return consistent interface: `{ action, loading, error, success }`
-- Handle all async operations and state management
-- Include comprehensive error handling
-- Reset state appropriately between operations
-- Place in `src/hooks/` directory
+- Presenters: `src/presenters/` or `src/hooks/presenters/`. Minimal side-effects; call use-cases. Example export `useProductListPresenter()`.
+- Use-cases: `src/usecases/`. Expose small methods for interactive flows. Keep side-effects encapsulated here.
+- Models/Repositories: `src/models/` or `src/lib/repositories`. Single responsibility: data access. Examples: `ProductsRepository`, `OrdersRepository`.
+
+Contracts:
+
+- Use-cases accept plain data objects and return results or throw errors; use `Result<T, E>` style where helpful.
+- Repositories expose async methods like `findProductByAsin(asin: string): Promise<Product | null>`.
+
+Testing:
+
+- Unit test use-cases in isolation with mocked repositories.
+- Test presenters by rendering Views with mocked use-cases or by testing `useXPresenter` hooks.
 
 ### Data Fetching & State Management Patterns
 

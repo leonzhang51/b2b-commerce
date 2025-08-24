@@ -19,6 +19,8 @@
 - Protect sensitive endpoints with middleware.
 - Never expose secrets or credentials in responses.
 
+MVP note: Keep API access in Models / Repositories. Use-cases should orchestrate flows and call repositories; presenters should call use-cases, not repositories directly. This keeps API usage centralized and easier to mock in tests.
+
 ## Error Handling
 
 - Return consistent error structures (e.g., `{ error: string }`).

@@ -296,6 +296,31 @@ Once we've created the derived store we can use it in the `App` component just l
 
 You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
 
+## Model-View-Presenter (MVP) refactor guide
+
+This repository is migrating toward a Model-View-Presenter (MVP) architecture to improve testability and separation of concerns. The high-level mapping for refactoring is:
+
+- Views: `src/views/` — presentational React components, minimal logic
+- Presenters: `src/presenters/` or `src/hooks/presenters/` — UI orchestration and state
+- Use-cases: `src/usecases/` — business logic and flows (e.g., CheckoutUseCase)
+- Models / Repositories: `src/models/` or `src/lib/repositories/` — DB and external API access
+
+Refactor tips:
+
+- Start with high-value flows (checkout, cart, product listing). Extract business logic into use-cases first.
+- Create repositories around Supabase access and keep RLS/policy logic in the database layer.
+- Presenters should adapt use-case outputs to shapes consumable by Views.
+- Add unit tests for use-cases and repository mocks before changing Views.
+
+Example migration of `Cart` feature:
+
+1. Create `src/models/OrdersRepository.ts` with methods to persist orders.
+2. Create `src/usecases/CheckoutUseCase.ts` that validates cart and calls OrdersRepository.
+3. Create `src/presenters/CheckoutPresenter.tsx` or `useCheckoutPresenter` to manage form state and call CheckoutUseCase.
+4. Keep `src/views/CheckoutView.tsx` as a presentational component rendering props.
+
+This approach keeps UI code lightweight and makes business rules easy to test.
+
 # Demo files
 
 Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.

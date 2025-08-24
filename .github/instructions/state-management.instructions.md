@@ -127,3 +127,5 @@ src/
 ## Migration Notes
 
 Todo state is now handled by Zustand stores (see `src/store/todoStore.ts`). Legacy MCP shims have been removed; update integrations to use the store directly.
+
+MVP note: place shared application state access in Presenters or Use-cases where appropriate. Views should only read passed-in state and emit events. Avoid placing business logic in Zustand selectors; keep them thin and focused on UI concerns.

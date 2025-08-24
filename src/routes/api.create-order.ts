@@ -1,6 +1,9 @@
 import { createServerFileRoute } from '@tanstack/react-start/server'
 import { createClient } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { makeProductsRepository } from '@/models/productsRepository'
+import { makeOrdersRepository } from '@/models/ordersRepository'
+import { makeCheckoutUseCase } from '@/usecases/CheckoutUseCase'
 
 const _SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const _SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -72,63 +75,17 @@ const POST = async ({ request }: { request: Request }) => {
       })
     }
 
-    // Validate products and compute totals
-    const asins = items.map((i) => i.asin)
-    const { data: products, error: prodError } = await supabase
-      .from('products')
-      .select('asin, title, price, listPrice')
-      .in('asin', asins)
+    // Delegate business logic to CheckoutUseCase (MVP)
+    const productsRepo = makeProductsRepository(supabase)
+    const ordersRepo = makeOrdersRepository(supabase)
+    const checkout = makeCheckoutUseCase({ productsRepo, ordersRepo })
 
-    if (prodError) throw prodError
+    const { orderId, total } = await checkout.checkout(userId, items, currency)
 
-    // Map product prices by asin
-    const priceMap = new Map<string, number>()
-    const prods = Array.isArray(products) ? products : []
-    for (const p of prods) {
-      priceMap.set(p.asin, p.price || p.listPrice || 0)
-    }
-
-    let total = 0
-    // compute totals locally for validation/feedback (DB will authoritative price)
-    for (const it of items) {
-      const unit = priceMap.get(it.asin) || it.unit_price || 0
-      const quantity = Math.max(1, it.quantity || 1)
-      const lineTotal = Number((unit * quantity).toFixed(2))
-      total += lineTotal
-    }
-
-    // Use DB-side RPC for transactional insert to avoid partial writes
-    const rpcPayload = items.map((it) => ({
-      asin: it.asin,
-      name: it.name ?? null,
-      unit_price: it.unit_price,
-      quantity: it.quantity,
-      metadata: null,
-    }))
-
-    const { data: rpcData, error: rpcError } = await supabase.rpc(
-      'create_order',
-      {
-        p_user_id: userId,
-        p_items: rpcPayload,
-        p_currency: currency ?? 'USD',
-      },
-    )
-
-    if (rpcError) throw rpcError
-
-    // rpc returns an array of rows (table result), take first
-    const result = Array.isArray(rpcData) ? rpcData[0] : rpcData
-    return new Response(
-      JSON.stringify({
-        orderId: result?.order_id,
-        total: Number(result?.total || 0),
-      }),
-      {
-        status: 201,
-        headers: { 'Content-Type': 'application/json' },
-      },
-    )
+    return new Response(JSON.stringify({ orderId, total }), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' },
+    })
   } catch (err: any) {
     return new Response(JSON.stringify({ error: err.message || String(err) }), {
       status: 500,

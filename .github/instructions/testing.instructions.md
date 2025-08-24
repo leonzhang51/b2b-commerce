@@ -23,6 +23,8 @@
 - Test interactions between modules (e.g., API + DB).
 - Use test databases or mocks for external services.
 
+MVP note: Test use-cases (business logic) with mocked repositories first. Presenters can be tested by rendering Views with mocked use-cases. This separation makes unit tests smaller and less dependent on infrastructure.
+
 ## End-to-End (E2E) Testing
 
 - Use Playwright or Cypress for E2E tests.

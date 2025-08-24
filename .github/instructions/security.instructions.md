@@ -20,6 +20,8 @@
 - Enforce least privilege for users and services.
 - Use multi-factor authentication where possible.
 
+MVP note: Centralize authentication and authorization checks in Models or Use-cases. Presenters should rely on use-case results and not replicate auth logic. For RLS-enabled databases (Supabase), ensure Model layer encapsulates any policy considerations.
+
 ## Database Security
 
 - Use parameterized queries to prevent SQL injection.

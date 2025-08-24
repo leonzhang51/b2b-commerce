@@ -14,6 +14,8 @@
 - Write idempotent migration scripts.
 - Always test migrations in a staging environment before production.
 
+MVP note: Encapsulate database access behind Repository classes in `src/models/` or `src/lib/repositories`. Repositories expose small primitives (find, insert, update) and are used by Use-cases. This allows easier swapping of persistence layers and simplifies testing.
+
 ## Data Integrity
 
 - Use foreign key constraints for referential integrity.

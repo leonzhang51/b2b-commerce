@@ -37,3 +37,5 @@ type Status = 'idle' | 'loading' | 'success' | 'error'
 
 export const API_BASE_URL = 'https://api.example.com'
 ```
+
+MVP note: Define clear TypeScript contracts for Use-cases and Repositories (e.g., `CheckoutUseCase`, `OrdersRepository`). Keep DTOs and domain types in `src/types/` and prefer explicit interfaces for public contracts used across layers.

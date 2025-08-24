@@ -123,6 +123,8 @@ export function useRegisterUser(): UseRegisterUser {
 - Focus component tests on UI rendering and user interactions.
 - Test business logic separately in hook-specific tests.
 
+MVP note: Organize components into `src/views/` (presentational) and `src/presenters/` (container/presenter logic). Presenters should import `src/usecases/` and `src/models/` but Views should not. This keeps component tests simple and allows presenter/unit tests to cover business logic.
+
 ### Example Hook Testing Pattern:
 
 ```tsx
