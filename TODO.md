@@ -85,82 +85,90 @@ Pick next initiative (move chosen items into active list):
 
 - Security hardening (refresh token rotation, session timeout UI, email verification banner)
 - Replace demo image upload in `ProductManager.tsx` with backend storage (Supabase Storage or S3) and persist image URLs in product records
-- Add integration tests for bulk import and image upload paths
-- Implement server-side order endpoints (create order, order items) or wire existing backend to client checkout flow
-- Admin dashboard improvements (UX polish, bulk edit flows)
 
-## � MVP / POC priorities (high priority — add to roadmap)
+# TODO / Roadmap
 
-These are critical for the project's purpose as an MVP/POC. Add them to `feat/cart` work and create small spikes (1–2 day) to validate feasibility.
+This file summarizes what is implemented in the codebase today and gives a focused, prioritized roadmap for the next steps. Keep it short and actionable — update as you complete items.
 
-1. Shopping-list UX for business users (generate & one-click add-to-cart)
-   - Why: business users purchase repeated sets of products; reduce search + add friction by showing a suggested shopping list at sign-in and during search.
-   - Contract (tiny):
-     - Input: authenticated user id, user role, order history, company profile, saved lists
-     - Output: ordered list of product identifiers with suggested quantities and a confidence score
-     - Success: modal shows list; user can verify, edit quantities, add selected items to cart in one action
-   - Edge cases: new users (no history), conflicting role pricing, out-of-stock items, partial availability
-   - Suggested files/components to add:
-     - `src/hooks/useShoppingList.ts` — server/client hook to assemble shopping list (calls MCP/AI or local heuristics)
-     - `src/components/ShoppingListModal.tsx` — modal UI to preview/confirm list
-     - integrate with `src/store/cartStore.ts` (bulk add API)
-     - trigger on sign-in in `src/routes/__root.tsx` or `src/components/Header.tsx`
-   - Minimal implementation plan: start with heuristic generator (order history + role-based templates), then evolve to AI-driven suggestions.
+## Current implementation snapshot (verified)
 
-2. AI-enhanced search via MCP (Model Context Protocol) + LLM
-   - Why: make search results context-aware (role, company, past orders) and reduce irrelevant results for technical/business roles.
-   - High-level design:
-     - Lightweight MCP server (POC) sits as a middleware: `src/mcp/server.ts` (or separate microservice) that queries Supabase for product and user context, formats a compressed context window and calls an LLM agent.
-     - Client search flow: `src/hooks/useEnhancedSearch.ts` calls MCP endpoint which returns ranked product IDs and rationale.
-   - Contract:
-     - Input: user id, role, search query, optionally recent order IDs or category filters
-     - Output: ranked list of product IDs with scores and optional explainability text
-   - Privacy & cost notes: avoid sending raw PII to the LLM; compress/aggregate product context (embeddings) and limit token usage. Cache popular queries.
-   - Suggested files/helpers:
-     - `src/mcp/` — MCP server/client scaffolding
-     - `src/lib/aiAgent.ts` — small wrapper to call chosen LLM (openai/azure/vertex) with guardrails
-     - `src/hooks/useEnhancedSearch.ts` — consumes MCP search results and maps to products
-   - Minimal implementation plan: start with a rules-based reranker locally, then add LLM reranking for a small subset of queries.
+- Frontend
+  - Product grid, search, filtering, and faceted filters (`src/components/*`, `src/hooks/*`) — working
+  - Cart: persistent Zustand store with role-aware pricing and discounts (`src/store/cartStore.ts`) — working and tested
+  - Checkout UI and flows (client-side) — present
+  - Admin UI: category/product management, audit log, impersonation, soft-delete — present
+  - Auth UI and flows (login/register/reset) using Supabase Auth — present and tested
+- Backend / DB artifacts
+  - Orders schema and RPC
+    - `sql/setup-orders.sql` — creates `orders` and `order_items`
+    - `sql/rpc-create-order.sql` — RPC `create_order(...)` (supports p_idempotency_key in newer version)
+    - `sql/migrate-add-idempotency-key.sql` — migration adding `idempotency_key` and partial unique index
+  - Use-cases & repositories
+    - `src/usecases/CheckoutUseCase.ts` — orchestrates checkout, input validation, idempotency check
+    - `src/models/ordersRepository.ts` — RPC caller + convenience methods (findByIdempotencyKey, recordIdempotencyKey)
+    - `src/models/productsRepository.ts` — product data access helpers
+  - CI & migrations
+    - `scripts/apply-sql.sh` helper and `package.json` `migrate:ci` script
+    - GitHub Actions workflow `.github/workflows/test-and-migrate.yml` to apply migrations + run tests
+- Tests & quality
+  - Vitest setup and many unit tests in `src/__tests__` — full suite passes locally
+  - ESLint/Prettier configuration present; repo-level docs updated for MVP patterns
 
-3. AI workflow automation for purchasing (n8n / workflow orchestration)
-   - Why: automate repetitive workflows (create purchase order, notify approver, re-order recurring items). Useful as POC for automation value.
-   - Integration idea:
-     - Create simple webhook endpoints `src/integrations/workflows/*` that emit events (shopping-list-accepted, checkout-completed).
-     - Connect to n8n or similar to implement flows: send vendor email, generate PDF PO, or escalate approvals.
-   - Suggested files:
-     - `src/integrations/n8n/README.md` — docs + sample webhooks
-     - `src/routes/api/webhooks/workflow.ts` — lightweight webhook receiver (signed) for POC
-   - Minimal implementation plan: implement one flow (shopping-list -> create PO draft in DB + email) and demo with n8n.
+## What is fully done (no work required right now)
 
-Quick next steps (spikes)
+- Product search + filters
+- Cart store and pricing logic (including tests)
+- Checkout use-case wired to call DB RPC via `ordersRepository` (including idempotency handling)
+- Orders DB artifacts and migration scripts exist
+- CI workflow to apply migrations and run tests (linter note: we removed direct `${{ secrets.* }}` usage to satisfy local validator)
 
-- Add `src/hooks/useShoppingList.ts` with heuristic fallback (order history + role templates) and wire `ShoppingListModal.tsx` for sign-in trigger
-- Prototype MCP server scaffold under `src/mcp/` that can accept query + user context and return ranked IDs (start with local reranker)
-- Add webhook endpoint + n8n flow to demonstrate automation for one event
+## Short-term priorities (next 1–2 weeks)
 
-Notes
+These are small, high-impact items that move the app toward an MVP for B2B purchasing.
 
-- These features are explicitly POC-level: prefer isolated, small, well-documented spikes and toggles (feature flags) to avoid coupling with main checkout code.
-- I can implement the heuristic shopping-list spike and modal now, then iterate to MCP integration. Tell me which spike to start.
+1. Wire frontend checkout to the server RPC and add integration tests — HIGH
+   - Confirm client calls `src/routes/api.create-order.ts` which uses `CheckoutUseCase` (it exists); add integration test that runs against local Postgres used in CI or a test DB mock.
+   - Verify the RPC `create_order` behavior with idempotency key in staging.
+   - Acceptance: checkout call creates `orders` and `order_items` rows and returns order summary.
 
-## �📋 Remaining General Backlog
+2. Apply idempotency migration to staging and confirm DB-level atomic behavior — HIGH
+   - Run `scripts/apply-sql.sh sql/migrate-add-idempotency-key.sql` against staging DB.
+   - Run concurrency test to ensure duplicate requests with same idempotency key do not create duplicate orders.
+   - After verification, consider removing app-level fallback `recordIdempotencyKey` if DB-level guarantees are sufficient.
 
-- Responsive/mobile UI improvements
-- Testing & quality (MSW API mocking, broader mutation tests, E2E smoke flow)
-- Performance (query cache audit, bundle splitting, error boundaries & logging)
-- Deployment readiness (env schema validation, health/status route, Supabase migration automation)
-- E2E tests for critical user flows
-- Performance optimizations (lazy loading, bundle analysis)
-- Accessibility audit and improvements
-- Documentation for deployment and environment setup
-- Optimize database: replace generic product/category names with realistic, diverse names for better search testing
+3. Implement real product image upload in `src/components/ProductManager.tsx` — MEDIUM
+   - Use `src/utils/imageUtils.ts` to compress images then upload to Supabase Storage or S3.
+   - Persist the returned URL on the product record and update UI to use stored URLs.
 
-Small next steps (low risk):
+4. Shopping-list spike (heuristic) — MEDIUM
+   - Add `src/hooks/useShoppingList.ts` that generates candidate lists from order history and role templates.
+   - Add `src/components/ShoppingListModal.tsx` to preview and bulk-add items to cart.
+   - Acceptance: user can open modal, edit quantities, and bulk-add to cart.
 
-- Implement real upload in `src/components/ProductManager.tsx` using `src/utils/imageUtils.ts` to compress prior to upload
-- Add unit tests for `compressImageFileAsync` (mock canvas) and cart discount flows
-- Update README/DEV docs with branch notes (current branch: `feat/cart`) if appropriate
+## Medium-term priorities (2–6 weeks)
+
+- AI / MCP POC: local reranker under `src/mcp/` and hook `useEnhancedSearch.ts` — start rules-based, then add LLM reranker if promising
+- Automation webhook & n8n POC: `src/routes/api/webhooks/*` and an example workflow to transform shopping-list acceptance into a draft purchase order and notification
+- Add E2E smoke tests for critical flows (login → search → add-to-cart → checkout)
+
+## Low-risk housekeeping & improvements
+
+- Add unit tests for `compressImageFileAsync` (mock canvas) and edge cases for cart discount logic
+- Accessibility pass for header, modals, and forms
+- Perf: lazy-load heavy components (ProductDetails variants, admin bulk tools)
+- Docs: update README with migration instructions and how to run CI locally (include `scripts/apply-sql.sh` usage)
+
+## Deployment / migration checklist (operational)
+
+- Run `./scripts/apply-sql.sh sql/setup-orders.sql` then `./scripts/apply-sql.sh sql/migrate-add-idempotency-key.sql` then `./scripts/apply-sql.sh sql/rpc-create-order.sql` in staging before enabling DB-level idempotency in production
+- Ensure repository Actions Variables or Secrets supply `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` for CI or set test defaults in `vitest.setup.ts`
+
+## Quick decisions to make (pick one to unblock work)
+
+- A: Apply idempotency migration to staging now (I can prepare a runbook and migration PR) — recommended before enabling DB-level idempotency
+- B: Start Shopping-list heuristic spike (UI + bulk-add) — quick visible value for B2B users
+- C: Implement real image upload for ProductManager — needed for admin UX
 
 ---
 
-Update this file as features are completed or added.
+Update this file as you complete items or if priorities change.
