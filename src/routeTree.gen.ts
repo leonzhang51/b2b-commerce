@@ -29,6 +29,7 @@ import { ServerRoute as ApiMcpTodosServerRouteImport } from './routes/api.mcp-to
 import { ServerRoute as ApiDemoTqTodosServerRouteImport } from './routes/api.demo-tq-todos'
 import { ServerRoute as ApiDemoNamesServerRouteImport } from './routes/api.demo-names'
 import { ServerRoute as ApiDebugProductsServerRouteImport } from './routes/api/debug-products'
+import { ServerRoute as ApiCreateOrderServerRouteImport } from './routes/api.create-order'
 
 const rootServerRouteImport = createServerRootRoute()
 
@@ -120,6 +121,11 @@ const ApiDemoNamesServerRoute = ApiDemoNamesServerRouteImport.update({
 const ApiDebugProductsServerRoute = ApiDebugProductsServerRouteImport.update({
   id: '/api/debug-products',
   path: '/api/debug-products',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiCreateOrderServerRoute = ApiCreateOrderServerRouteImport.update({
+  id: '/api/create-order',
+  path: '/api/create-order',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 
@@ -219,6 +225,7 @@ export interface RootRouteChildren {
 }
 export interface FileServerRoutesByFullPath {
   '/mcp': typeof McpServerRoute
+  '/api/create-order': typeof ApiCreateOrderServerRoute
   '/api/debug-products': typeof ApiDebugProductsServerRoute
   '/api/demo-names': typeof ApiDemoNamesServerRoute
   '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
@@ -228,6 +235,7 @@ export interface FileServerRoutesByFullPath {
 }
 export interface FileServerRoutesByTo {
   '/mcp': typeof McpServerRoute
+  '/api/create-order': typeof ApiCreateOrderServerRoute
   '/api/debug-products': typeof ApiDebugProductsServerRoute
   '/api/demo-names': typeof ApiDemoNamesServerRoute
   '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
@@ -238,6 +246,7 @@ export interface FileServerRoutesByTo {
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
   '/mcp': typeof McpServerRoute
+  '/api/create-order': typeof ApiCreateOrderServerRoute
   '/api/debug-products': typeof ApiDebugProductsServerRoute
   '/api/demo-names': typeof ApiDemoNamesServerRoute
   '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
@@ -249,6 +258,7 @@ export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
   fullPaths:
     | '/mcp'
+    | '/api/create-order'
     | '/api/debug-products'
     | '/api/demo-names'
     | '/api/demo-tq-todos'
@@ -258,6 +268,7 @@ export interface FileServerRouteTypes {
   fileServerRoutesByTo: FileServerRoutesByTo
   to:
     | '/mcp'
+    | '/api/create-order'
     | '/api/debug-products'
     | '/api/demo-names'
     | '/api/demo-tq-todos'
@@ -267,6 +278,7 @@ export interface FileServerRouteTypes {
   id:
     | '__root__'
     | '/mcp'
+    | '/api/create-order'
     | '/api/debug-products'
     | '/api/demo-names'
     | '/api/demo-tq-todos'
@@ -277,6 +289,7 @@ export interface FileServerRouteTypes {
 }
 export interface RootServerRouteChildren {
   McpServerRoute: typeof McpServerRoute
+  ApiCreateOrderServerRoute: typeof ApiCreateOrderServerRoute
   ApiDebugProductsServerRoute: typeof ApiDebugProductsServerRoute
   ApiDemoNamesServerRoute: typeof ApiDemoNamesServerRoute
   ApiDemoTqTodosServerRoute: typeof ApiDemoTqTodosServerRoute
@@ -417,6 +430,13 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiDebugProductsServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
+    '/api/create-order': {
+      id: '/api/create-order'
+      path: '/api/create-order'
+      fullPath: '/api/create-order'
+      preLoaderRoute: typeof ApiCreateOrderServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
   }
 }
 
@@ -449,6 +469,7 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 const rootServerRouteChildren: RootServerRouteChildren = {
   McpServerRoute: McpServerRoute,
+  ApiCreateOrderServerRoute: ApiCreateOrderServerRoute,
   ApiDebugProductsServerRoute: ApiDebugProductsServerRoute,
   ApiDemoNamesServerRoute: ApiDemoNamesServerRoute,
   ApiDemoTqTodosServerRoute: ApiDemoTqTodosServerRoute,

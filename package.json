@@ -19,7 +19,8 @@
     "release": "standard-version",
     "changelog": "standard-version --dry-run",
     "router:generate": "tsr generate ./src/routeTree.gen.ts",
-    "migrate:apply": "./scripts/apply-sql.sh"
+    "migrate:apply": "./scripts/apply-sql.sh",
+    "migrate:ci": "./scripts/apply-sql.sh sql/setup-orders.sql && ./scripts/apply-sql.sh sql/migrate-add-idempotency-key.sql && ./scripts/apply-sql.sh sql/rpc-create-order.sql"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

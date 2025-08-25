@@ -17,13 +17,15 @@ vi.mock('@supabase/supabase-js', () => {
       return {
         select: (_cols: string) => ({
           in: (_col: string, asins: Array<string>) => ({
-            data: asins.map((a: string) => ({
-              asin: a,
-              title: `P-${a}`,
-              price: 10,
-              listPrice: null,
-            })),
-            error: null,
+            is: (_col: string, _value: any) => ({
+              data: asins.map((a: string) => ({
+                asin: a,
+                title: `P-${a}`,
+                price: 10,
+                listPrice: null,
+              })),
+              error: null,
+            }),
           }),
         }),
       }

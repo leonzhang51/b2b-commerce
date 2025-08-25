@@ -1,9 +1,10 @@
 import { createServerFileRoute } from '@tanstack/react-start/server'
 import { createClient } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+// using request-scoped client; do not import global supabase here
 import { makeProductsRepository } from '@/models/productsRepository'
 import { makeOrdersRepository } from '@/models/ordersRepository'
 import { makeCheckoutUseCase } from '@/usecases/CheckoutUseCase'
+import { recordMetric } from '@/lib/metrics'
 
 const _SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const _SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -76,11 +77,26 @@ const POST = async ({ request }: { request: Request }) => {
     }
 
     // Delegate business logic to CheckoutUseCase (MVP)
-    const productsRepo = makeProductsRepository(supabase)
-    const ordersRepo = makeOrdersRepository(supabase)
+    // Use the request-scoped Supabase client so RLS and per-request auth apply
+    const productsRepo = makeProductsRepository(serverSupabase)
+    const ordersRepo = makeOrdersRepository(serverSupabase)
     const checkout = makeCheckoutUseCase({ productsRepo, ordersRepo })
 
-    const { orderId, total } = await checkout.checkout(userId, items, currency)
+    // Support Idempotency-Key header (both standard and x- prefixed)
+    const idempotencyKey =
+      (request.headers.get('idempotency-key') as string) ||
+      (request.headers.get('x-idempotency-key') as string) ||
+      null
+
+    if (idempotencyKey)
+      recordMetric('idempotency.received', { userId, idempotencyKey })
+
+    const { orderId, total } = await checkout.checkout(
+      userId,
+      items,
+      currency,
+      idempotencyKey || undefined,
+    )
 
     return new Response(JSON.stringify({ orderId, total }), {
       status: 201,

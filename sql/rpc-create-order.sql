@@ -3,7 +3,8 @@
 CREATE OR REPLACE FUNCTION public.create_order(
   p_user_id UUID,
   p_items JSONB,
-  p_currency TEXT DEFAULT 'USD'
+  p_currency TEXT DEFAULT 'USD',
+  p_idempotency_key TEXT DEFAULT NULL
 )
 RETURNS TABLE(order_id UUID, total NUMERIC)
 LANGUAGE plpgsql
@@ -24,8 +25,18 @@ BEGIN
   END IF;
 
   -- Create empty order first (total will be updated at the end)
-  INSERT INTO public.orders(user_id, total, currency, status)
-  VALUES (p_user_id, 0, p_currency, 'placed')
+  -- If idempotency key provided, check for existing order and return it
+  IF p_idempotency_key IS NOT NULL THEN
+    SELECT id, total INTO ord_id, total FROM public.orders WHERE idempotency_key = p_idempotency_key LIMIT 1;
+    IF ord_id IS NOT NULL THEN
+      order_id := ord_id;
+      RETURN NEXT;
+      RETURN;
+    END IF;
+  END IF;
+
+  INSERT INTO public.orders(user_id, total, currency, status, idempotency_key)
+  VALUES (p_user_id, 0, p_currency, 'placed', p_idempotency_key)
   RETURNING id INTO ord_id;
 
   total := 0;
