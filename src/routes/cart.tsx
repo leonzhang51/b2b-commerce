@@ -107,7 +107,10 @@ export default function CartPage() {
             <span>${(discountedTotal ?? totalPrice).toFixed(2)}</span>
           </div>
           <div className="flex gap-4 mt-4">
-            <button className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+            <button
+              onClick={() => (window.location.href = '/checkout')}
+              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+            >
               Checkout
             </button>
             <button

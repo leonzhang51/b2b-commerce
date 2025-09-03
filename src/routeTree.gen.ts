@@ -17,6 +17,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as EditUserRouteImport } from './routes/edit-user'
 import { Route as CategoriesRouteImport } from './routes/categories'
+import { Route as CheckoutRouteRouteImport } from './routes/checkout.route'
 import { Route as CartRouteRouteImport } from './routes/cart.route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
@@ -61,6 +62,11 @@ const EditUserRoute = EditUserRouteImport.update({
 const CategoriesRoute = CategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRouteRoute = CheckoutRouteRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartRouteRoute = CartRouteRouteImport.update({
@@ -132,6 +138,7 @@ const ApiCreateOrderServerRoute = ApiCreateOrderServerRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cart': typeof CartRouteRoute
+  '/checkout': typeof CheckoutRouteRoute
   '/categories': typeof CategoriesRoute
   '/edit-user': typeof EditUserRouteWithChildren
   '/login': typeof LoginRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cart': typeof CartRouteRoute
+  '/checkout': typeof CheckoutRouteRoute
   '/categories': typeof CategoriesRoute
   '/edit-user': typeof EditUserRouteWithChildren
   '/login': typeof LoginRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/cart': typeof CartRouteRoute
+  '/checkout': typeof CheckoutRouteRoute
   '/categories': typeof CategoriesRoute
   '/edit-user': typeof EditUserRouteWithChildren
   '/login': typeof LoginRoute
@@ -174,6 +183,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/cart'
+    | '/checkout'
     | '/categories'
     | '/edit-user'
     | '/login'
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/cart'
+    | '/checkout'
     | '/categories'
     | '/edit-user'
     | '/login'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/cart'
+    | '/checkout'
     | '/categories'
     | '/edit-user'
     | '/login'
@@ -214,6 +226,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CartRouteRoute: typeof CartRouteRoute
+  CheckoutRouteRoute: typeof CheckoutRouteRoute
   CategoriesRoute: typeof CategoriesRoute
   EditUserRoute: typeof EditUserRouteWithChildren
   LoginRoute: typeof LoginRoute
@@ -342,6 +355,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cart': {
       id: '/cart'
       path: '/cart'
@@ -455,6 +475,7 @@ const EditUserRouteWithChildren = EditUserRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CartRouteRoute: CartRouteRoute,
+  CheckoutRouteRoute: CheckoutRouteRoute,
   CategoriesRoute: CategoriesRoute,
   EditUserRoute: EditUserRouteWithChildren,
   LoginRoute: LoginRoute,

@@ -74,8 +74,10 @@ export class ProductPricingUseCase {
   /**
    * Format price for display
    */
-  formatPrice(price: number): string {
-    return `$${price.toFixed(2)}`
+  formatPrice(price: number | string): string {
+    const num = typeof price === 'number' ? price : Number(price)
+    if (isNaN(num)) return '$0.00'
+    return `$${num.toFixed(2)}`
   }
 
   /**
