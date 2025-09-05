@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import type { AuthFormProps } from '@/types/auth'
 import { useAuth } from '@/hooks/useAuth'
 import { Input } from '@/components/ui/input'
@@ -6,6 +7,16 @@ import { Button } from '@/components/ui/button'
 
 export function AuthForm(_: AuthFormProps) {
   const { user, loading, signIn, signOut } = useAuth()
+
+  // Handle case where component is used outside router context (e.g., in tests)
+  let navigate: ((options: { to: string }) => void) | null = null
+  try {
+    navigate = useNavigate()
+  } catch {
+    // useNavigate failed, likely in test environment
+    navigate = null
+  }
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -14,7 +25,14 @@ export function AuthForm(_: AuthFormProps) {
     e.preventDefault()
     setError(null)
     const err = await signIn(email, password)
-    if (err) setError(err.message || 'Login failed')
+    if (err) {
+      setError(err.message || 'Login failed')
+    } else {
+      // Redirect to home page on successful sign-in
+      if (navigate) {
+        navigate({ to: '/' })
+      }
+    }
   }
 
   if (loading) return <div>Loading...</div>

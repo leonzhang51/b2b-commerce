@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import type { AuthUser } from '@/types/auth'
 import { supabase } from '@/lib/supabase'
+import { useUserStore } from '@/store/userStore'
 
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null)
@@ -9,6 +10,9 @@ export function useAuth() {
   const [loginAttempts, setLoginAttempts] = useState(0)
   const [isLocked, setIsLocked] = useState(false)
   const [lockoutUntil, setLockoutUntil] = useState<number | null>(null)
+
+  // Zustand store actions
+  const { setUser: setStoreUser, clearUser: clearStoreUser } = useUserStore()
 
   const fetchUser = useCallback(async () => {
     setLoading(true)
@@ -20,25 +24,31 @@ export function useAuth() {
         .select('*')
         .eq('id', data.user.id)
         .single()
+
+      let userData: AuthUser
       if (profile && !error) {
-        setUser({
+        userData = {
           id: data.user.id,
           email: data.user.email ?? '',
           ...data.user.user_metadata,
           ...profile,
-        })
+        }
       } else {
-        setUser({
+        userData = {
           id: data.user.id,
           email: data.user.email ?? '',
           ...data.user.user_metadata,
-        })
+        }
       }
+
+      setUser(userData)
+      setStoreUser(userData) // Store in Zustand
     } else {
       setUser(null)
+      clearStoreUser() // Clear from Zustand
     }
     setLoading(false)
-  }, [])
+  }, [setStoreUser, clearStoreUser])
 
   useEffect(() => {
     fetchUser()
@@ -105,6 +115,7 @@ export function useAuth() {
     setLoading(true)
     await supabase.auth.signOut()
     setUser(null)
+    clearStoreUser() // Clear from Zustand
     setLoading(false)
   }
 

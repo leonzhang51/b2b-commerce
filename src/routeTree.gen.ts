@@ -22,9 +22,7 @@ import { Route as CartRouteRouteImport } from './routes/cart.route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as EditUserIdRouteImport } from './routes/edit-user.$id'
-import { Route as DemoDbChatRouteImport } from './routes/demo.db-chat'
 import { ServerRoute as McpServerRouteImport } from './routes/mcp'
-import { ServerRoute as DemoDbChatApiServerRouteImport } from './routes/demo.db-chat-api'
 import { ServerRoute as ApiProductsServerRouteImport } from './routes/api/products'
 import { ServerRoute as ApiMcpTodosServerRouteImport } from './routes/api.mcp-todos'
 import { ServerRoute as ApiDemoTqTodosServerRouteImport } from './routes/api.demo-tq-todos'
@@ -89,19 +87,9 @@ const EditUserIdRoute = EditUserIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => EditUserRoute,
 } as any)
-const DemoDbChatRoute = DemoDbChatRouteImport.update({
-  id: '/demo/db-chat',
-  path: '/demo/db-chat',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const McpServerRoute = McpServerRouteImport.update({
   id: '/mcp',
   path: '/mcp',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
-const DemoDbChatApiServerRoute = DemoDbChatApiServerRouteImport.update({
-  id: '/demo/db-chat-api',
-  path: '/demo/db-chat-api',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiProductsServerRoute = ApiProductsServerRouteImport.update({
@@ -145,7 +133,6 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/user-admin': typeof UserAdminRoute
-  '/demo/db-chat': typeof DemoDbChatRoute
   '/edit-user/$id': typeof EditUserIdRoute
   '/product/$id': typeof ProductIdRoute
 }
@@ -159,7 +146,6 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/user-admin': typeof UserAdminRoute
-  '/demo/db-chat': typeof DemoDbChatRoute
   '/edit-user/$id': typeof EditUserIdRoute
   '/product/$id': typeof ProductIdRoute
 }
@@ -174,7 +160,6 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/user-admin': typeof UserAdminRoute
-  '/demo/db-chat': typeof DemoDbChatRoute
   '/edit-user/$id': typeof EditUserIdRoute
   '/product/$id': typeof ProductIdRoute
 }
@@ -190,7 +175,6 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/user-admin'
-    | '/demo/db-chat'
     | '/edit-user/$id'
     | '/product/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -204,7 +188,6 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/user-admin'
-    | '/demo/db-chat'
     | '/edit-user/$id'
     | '/product/$id'
   id:
@@ -218,7 +201,6 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/user-admin'
-    | '/demo/db-chat'
     | '/edit-user/$id'
     | '/product/$id'
   fileRoutesById: FileRoutesById
@@ -233,7 +215,6 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   UserAdminRoute: typeof UserAdminRoute
-  DemoDbChatRoute: typeof DemoDbChatRoute
   ProductIdRoute: typeof ProductIdRoute
 }
 export interface FileServerRoutesByFullPath {
@@ -244,7 +225,6 @@ export interface FileServerRoutesByFullPath {
   '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
   '/api/mcp-todos': typeof ApiMcpTodosServerRoute
   '/api/products': typeof ApiProductsServerRoute
-  '/demo/db-chat-api': typeof DemoDbChatApiServerRoute
 }
 export interface FileServerRoutesByTo {
   '/mcp': typeof McpServerRoute
@@ -254,7 +234,6 @@ export interface FileServerRoutesByTo {
   '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
   '/api/mcp-todos': typeof ApiMcpTodosServerRoute
   '/api/products': typeof ApiProductsServerRoute
-  '/demo/db-chat-api': typeof DemoDbChatApiServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
@@ -265,7 +244,6 @@ export interface FileServerRoutesById {
   '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
   '/api/mcp-todos': typeof ApiMcpTodosServerRoute
   '/api/products': typeof ApiProductsServerRoute
-  '/demo/db-chat-api': typeof DemoDbChatApiServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
@@ -277,7 +255,6 @@ export interface FileServerRouteTypes {
     | '/api/demo-tq-todos'
     | '/api/mcp-todos'
     | '/api/products'
-    | '/demo/db-chat-api'
   fileServerRoutesByTo: FileServerRoutesByTo
   to:
     | '/mcp'
@@ -287,7 +264,6 @@ export interface FileServerRouteTypes {
     | '/api/demo-tq-todos'
     | '/api/mcp-todos'
     | '/api/products'
-    | '/demo/db-chat-api'
   id:
     | '__root__'
     | '/mcp'
@@ -297,7 +273,6 @@ export interface FileServerRouteTypes {
     | '/api/demo-tq-todos'
     | '/api/mcp-todos'
     | '/api/products'
-    | '/demo/db-chat-api'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
@@ -308,7 +283,6 @@ export interface RootServerRouteChildren {
   ApiDemoTqTodosServerRoute: typeof ApiDemoTqTodosServerRoute
   ApiMcpTodosServerRoute: typeof ApiMcpTodosServerRoute
   ApiProductsServerRoute: typeof ApiProductsServerRoute
-  DemoDbChatApiServerRoute: typeof DemoDbChatApiServerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -390,13 +364,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EditUserIdRouteImport
       parentRoute: typeof EditUserRoute
     }
-    '/demo/db-chat': {
-      id: '/demo/db-chat'
-      path: '/demo/db-chat'
-      fullPath: '/demo/db-chat'
-      preLoaderRoute: typeof DemoDbChatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 declare module '@tanstack/react-start/server' {
@@ -406,13 +373,6 @@ declare module '@tanstack/react-start/server' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
-    '/demo/db-chat-api': {
-      id: '/demo/db-chat-api'
-      path: '/demo/db-chat-api'
-      fullPath: '/demo/db-chat-api'
-      preLoaderRoute: typeof DemoDbChatApiServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/products': {
@@ -482,7 +442,6 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   UserAdminRoute: UserAdminRoute,
-  DemoDbChatRoute: DemoDbChatRoute,
   ProductIdRoute: ProductIdRoute,
 }
 export const routeTree = rootRouteImport
@@ -496,7 +455,6 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiDemoTqTodosServerRoute: ApiDemoTqTodosServerRoute,
   ApiMcpTodosServerRoute: ApiMcpTodosServerRoute,
   ApiProductsServerRoute: ApiProductsServerRoute,
-  DemoDbChatApiServerRoute: DemoDbChatApiServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport
   ._addFileChildren(rootServerRouteChildren)

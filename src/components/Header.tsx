@@ -10,10 +10,7 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const isAdmin = user && user.role === 'admin'
 
-  const navLinks = [
-    { to: '/', label: 'Home' },
-    { to: '/demo/db-chat', label: 'DB Chat' },
-  ]
+  const navLinks = []
   if (isAdmin) {
     navLinks.push({ to: '/user-admin', label: 'User Admin' })
   }

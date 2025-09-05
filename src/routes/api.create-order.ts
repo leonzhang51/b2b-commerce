@@ -1,10 +1,5 @@
 import { createServerFileRoute } from '@tanstack/react-start/server'
 import { createClient } from '@supabase/supabase-js'
-// using request-scoped client; do not import global supabase here
-import { makeProductsRepository } from '@/models/productsRepository'
-import { makeOrdersRepository } from '@/models/ordersRepository'
-import { makeCheckoutUseCase } from '@/usecases/CheckoutUseCase'
-import { recordMetric } from '@/lib/metrics'
 
 const _SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const _SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -14,19 +9,37 @@ type OrderItemInput = {
   name?: string
   unit_price: number
   quantity: number
+  sku?: string
+  metadata?: Record<string, any>
+}
+
+type Address = {
+  name?: string
+  street: string
+  city: string
+  state: string
+  postal_code: string
+  country: string
+  phone?: string
 }
 
 const POST = async ({ request }: { request: Request }) => {
   try {
     const body = await request.json()
     const {
-      userId: payloadUserId,
+      user_id: payloadUserId,
       items,
       currency,
+      shipping_address,
+      billing_address,
+      metadata,
     } = body as {
-      userId?: string
+      user_id?: string
       items: Array<OrderItemInput>
       currency?: string
+      shipping_address?: Address
+      billing_address?: Address
+      metadata?: Record<string, any>
     }
 
     // Derive authenticated user from Authorization header (Bearer token)
@@ -76,27 +89,51 @@ const POST = async ({ request }: { request: Request }) => {
       })
     }
 
-    // Delegate business logic to CheckoutUseCase (MVP)
-    // Use the request-scoped Supabase client so RLS and per-request auth apply
-    const productsRepo = makeProductsRepository(serverSupabase)
-    const ordersRepo = makeOrdersRepository(serverSupabase)
-    const checkout = makeCheckoutUseCase({ productsRepo, ordersRepo })
-
-    // Support Idempotency-Key header (both standard and x- prefixed)
-    const idempotencyKey =
-      (request.headers.get('idempotency-key') as string) ||
-      (request.headers.get('x-idempotency-key') as string) ||
-      null
-
-    if (idempotencyKey)
-      recordMetric('idempotency.received', { userId, idempotencyKey })
-
-    const { orderId, total } = await checkout.checkout(
-      userId,
-      items,
-      currency,
-      idempotencyKey || undefined,
+    // Calculate total from items
+    const total = items.reduce(
+      (sum, item) => sum + item.unit_price * item.quantity,
+      0,
     )
+
+    // Create order in database
+    const { data: orderData, error: orderError } = await serverSupabase
+      .from('orders')
+      .insert({
+        user_id: userId,
+        total,
+        currency: currency || 'USD',
+        status: 'placed',
+        shipping_address,
+        billing_address,
+        metadata,
+      })
+      .select('id')
+      .single()
+
+    if (orderError) {
+      throw new Error(`Failed to create order: ${orderError.message}`)
+    }
+
+    const orderId = orderData.id
+
+    // Insert order items into order_items table
+    const orderItemsPayload = items.map((item) => ({
+      order_id: orderId,
+      product_asin: item.asin,
+      sku: item.sku ?? null,
+      name: item.name ?? '',
+      unit_price: item.unit_price,
+      quantity: item.quantity,
+      metadata: item.metadata ?? {},
+    }))
+
+    const { error: itemsError } = await serverSupabase
+      .from('order_items')
+      .insert(orderItemsPayload)
+
+    if (itemsError) {
+      throw new Error(`Failed to create order items: ${itemsError.message}`)
+    }
 
     return new Response(JSON.stringify({ orderId, total }), {
       status: 201,
