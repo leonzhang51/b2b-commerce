@@ -18,7 +18,7 @@ This file gives a compact, actionable status snapshot for the B2B Commerce proof
   - Auth & security: `src/hooks/useAuth.ts`, `src/store/securityStore.ts`, `src/components/RequireAuth.tsx`
   - Product UI & search: `src/components/ProductGrid.tsx`, `src/components/ProductSearch.tsx`, `src/components/ProductFacetedFilters.tsx`
   - Cart & pricing: `src/store/cartStore.ts`, `src/lib/rolePricing.ts`, `src/lib/discountCodes.ts`
-  - Checkout & orders: `src/usecases/CheckoutUseCase.ts`, `src/models/ordersRepository.ts`, `sql/setup-orders.sql`, `sql/rpc-create-order.sql`, `sql/migrate-add-idempotency-key.sql`
+  - Checkout & orders: `src/usecases/CheckoutUseCase.ts`, `src/models/ordersRepository.ts`, `src/hooks/useCheckout.ts`, `sql/setup-orders.sql`, `sql/rpc-create-order.sql`, `sql/migrate-add-idempotency-key.sql`
   - Utils & infra: `src/lib/supabase.ts`, `src/utils/imageUtils.ts` (compression demo)
 
 ## Status by POC Goal
@@ -39,8 +39,14 @@ This file gives a compact, actionable status snapshot for the B2B Commerce proof
 
 1. Implement shopping-list spike (heuristic) — create `useShoppingList` + `ShoppingListModal` and unit tests. (Timebox: 3 days)
 2. Add a small rule-based reranker and wire it into `ProductSearch` as opt-in (allow comparison). (Timebox: 3–4 days)
-3. Wire frontend checkout to server RPC + add integration test that asserts order rows are created. (Timebox: 2–3 days)
-4. Apply idempotency migration to staging and run concurrency test. (Ops)
+3. Frontend checkout wiring — WIRED; add integration test to verify DB rows are created (Timebox: 1–2 days)
+
+- Note: frontend calls `/api/create-order` (`src/hooks/useCheckout.ts`), route and RPC usage exist. Current tests are unit/mocked. Add an integration test that applies migrations and asserts rows in `orders` and `order_items`.
+
+4. Apply idempotency migration — DONE (applied in Supabase)
+
+- Status: `idempotency_key` column and partial unique index have been applied in Supabase. Manual verification via Supabase admin confirms schema changes.
+- Next: optional concurrency validation in staging to exercise DB-level deduplication under load.
 
 ## Medium-term Actions (2–6 weeks)
 

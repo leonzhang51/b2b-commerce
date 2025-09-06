@@ -31,15 +31,19 @@ Summary: the application is a working e-commerce app with auth, search, cart, ch
 
 Short-term (high priority, next 1–2 weeks)
 
-1. Wire frontend checkout to server RPC & add integration tests (MVP acceptance)
+1. Wire frontend checkout to server RPC — WIRED (integration tests pending)
 
-- Files: `src/routes/api.create-order.ts`, `src/usecases/CheckoutUseCase.ts`, `src/models/ordersRepository.ts`
-- Acceptance: placing an order from the client creates rows in `orders` and `order_items` and returns an order summary.
+- Files: `src/routes/api.create-order.ts`, `src/usecases/CheckoutUseCase.ts`, `src/models/ordersRepository.ts`, `src/hooks/useCheckout.ts`
+- Status: Frontend is already calling `/api/create-order` (see `src/hooks/useCheckout.ts`), the route handler exists (`src/routes/api.create-order.ts`), `CheckoutUseCase` orchestrates order creation and `ordersRepository` calls the DB RPC `create_order`.
+- Note: current tests exercise the route with mocks (unit tests). An integration test that runs against a real Postgres/staging DB to assert rows in `orders` and `order_items` are created is still required.
+- Next action: add an integration test (or CI job) that applies migrations, runs the create-order flow, and asserts DB rows; then apply idempotency migration to staging and validate concurrency behavior.
 
-2. Apply idempotency DB migration to staging and validate (avoid duplicates)
+2. Apply idempotency DB migration — DONE (applied in Supabase)
 
 - Files: `sql/migrate-add-idempotency-key.sql`, `scripts/apply-sql.sh`
-- Acceptance: concurrent requests with same idempotency key do not create duplicate orders.
+- Status: migration applied in Supabase (confirmed). The `idempotency_key` column and a partial unique index are present on `orders`.
+- Note: application-level fallback `recordIdempotencyKey` can be retained for cross-db compatibility, but DB-level uniqueness now prevents duplicates when `idempotency_key` is provided.
+- Optional next step: run a staged concurrency test to validate behavior under load; current manual check in Supabase admin shows schema and index applied.
 
 3. Shopping-list spike & UI (B2B UX) — implement heuristic generator
 
