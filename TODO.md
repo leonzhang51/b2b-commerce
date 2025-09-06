@@ -1,173 +1,102 @@
-- [ ] Integrate real product image upload logic in `ProductManager.tsx` (replace demo URL logic with actual backend upload, e.g., Supabase Storage or S3)
-- [ ] Integrate real product image upload logic in `ProductManager.tsx` (replace demo URL logic with actual backend upload, e.g., Supabase Storage or S3)
-  - Note: client-side image compression is implemented in `src/utils/imageUtils.ts` (`compressImageFileAsync`). `src/components/ProductManager.tsx` currently creates a demo local URL after compression — replace that block with actual upload + URL persistence.
+## 🚩 POC MVP Tasks: B2B AI-Driven Commerce
 
-# Project TODO
+1. **Shopping List Generation (B2B UX)**
 
-## ✅ Features status (auto-checked from codebase)
+- Auto-generate shopping lists for signed-in users based on order history, role, and project profile.
 
-- Category and product schema with UUIDs and referential integrity — DONE (see `sql/setup-categories.sql`, `sql/setup-categories-safe.sql`)
-- Product grid and search components — DONE (`src/components/ProductGrid.tsx`, `src/components/ProductSearch.tsx`)
-- Zustand for local state management — DONE (`src/store/cartStore.ts`, `src/store/index.ts`)
-- TanStack Query for data fetching — DONE (`src/hooks/useSupabase.ts`, multiple `useQuery` hooks)
-- Cart functionality (add/remove, quantity) with persistence — DONE (`src/store/cartStore.ts` with `persist` middleware)
-- Checkout flow (UI present) — PARTIAL (checkout buttons/UI exist, but no server-side order creation endpoints found)
-- Admin UI for product/category management — DONE (`src/components/CategoryManager.tsx`, `src/components/AdminDashboard.tsx`)
-- User authentication and authorization — DONE (Supabase auth integration and related stores/hooks in `src/store/securityStore.ts`)
-- Product search and filtering — DONE (`src/components/ProductFacetedFilters.tsx`, search hooks)
-- Role-based pricing and discount logic — DONE (`src/lib/rolePricing.ts`, `src/lib/discountCodes.ts`)
-- Order management (view orders, order history) — PARTIAL (UI/clients hooks may exist; no server-side `orders` insert/query endpoints found in services)
-- API endpoints for cart and orders — PARTIAL (cart is client-side; no server order creation endpoints located)
-- Supabase integration for data — DONE (multiple `supabase` imports; `src/lib/supabase.ts`)
-- TanStack Router setup with codegen — DONE (`src/routes/*`, `src/routes/__root.tsx`)
-- Automated changelog and versioning (standard-version + Husky) — CONFIGURED (mentioned in repo metadata and `.github/copilot-instructions.md`)
-- Testing tooling (Vitest + tests) — DONE (`vitest.config.ts`, many tests in `src/__tests__`)
-- Security and TypeScript guidelines — DONE (project docs and types present)
+## POC: B2B AI-driven Commerce — Done vs To Do
 
-Implemented/Notable refactor artifacts
+This document summarizes what in the repository is already implemented and what remains to support the POC goals:
 
-- Client-side image utilities: `src/utils/imageUtils.ts` (compression, srcset, placeholder helpers)
-- ProductManager: `src/components/ProductManager.tsx` — import/export, CSV/JSON parsing, image upload currently demo-only
-- Cart store: `src/store/cartStore.ts` — persistent cart, role-based pricing integration, discount code handling, computed discounted totals
+- POC goals
+  1. New B2B UX: auto-generate shopping lists from user order history + profile (role, project, etc.)
+  2. Profile-aware search: surface and rerank results to match user profile and history
+  3. AI-driven architecture: adopt MCP for DB access and use LLMs for search, reranking, and shopping-list generation
 
-## 🟡 Feature Breakdown & Status
+---
 
-### User Authentication & Roles
+## What is Done (short, referenceable)
 
-- [x] Implement registration, login, and logout UI (sign up, sign in, sign out)
-- [x] Integrate Supabase Auth for user management
-- [x] Add password reset flow (email confirmation uses Supabase default; custom UI optional)
-- [x] Store additional user profile fields (name, company, phone, etc.) in `public.users`
-- [x] Sync Supabase `auth.users` with `public.users` (SQL + app fetch logic)
-- [x] Implement role assignment (`role` + `permissions`) in `public.users`
-- [x] Add role-based route protection (`RequireRole` component)
-- [x] Add admin UI for managing users and roles
-- [x] Enforce Row Level Security (RLS) in Supabase for data access by role
-- [ ] Expand automated tests for full auth & authorization flows
-  - [x] RequireRole access tests
-  - [x] Basic form render tests (login, register, reset password)
-  - [x] Registration submission success & error handling
-  - [x] Password reset success path assertion
-  - [x] Admin role change & permission regression test
-  - [x] Negative access tests (non-admin hitting admin route)
+- Authentication & roles: login/register/reset, Supabase auth integration, role fields in `public.users`, `RequireRole` component. (See: `src/hooks/useAuth.ts`, `src/store/securityStore.ts`, `src/components/RequireAuth.tsx`)
+- Product UI: product grid, product search input, faceted filters, product details. (See: `src/components/ProductGrid.tsx`, `src/components/ProductSearch.tsx`, `src/components/ProductFacetedFilters.tsx`)
+- Cart & pricing: persistent cart (`src/store/cartStore.ts`) with role-based pricing and discount logic (`src/lib/rolePricing.ts`, `src/lib/discountCodes.ts`). Tests present in `src/__tests__/cartStore.*`.
+- Checkout use-case & DB RPC: `src/usecases/CheckoutUseCase.ts`, `src/models/ordersRepository.ts`, SQL artifacts `sql/setup-orders.sql`, `sql/rpc-create-order.sql`, and idempotency migration script `sql/migrate-add-idempotency-key.sql` (migration not necessarily applied to staging).
+- Utilities & infra: Supabase client (`src/lib/supabase.ts`), image compression (demo) in `src/utils/imageUtils.ts`, many unit tests (Vitest) and CI workflow.
 
-### Cart & Pricing (Active)
+Summary: the application is a working e-commerce app with auth, search, cart, checkout orchestration, and admin UX. Key pieces for the POC are present but not fully wired to AI/MCP features.
 
-- [x] Persistent cart (localStorage or Supabase sync)
-- [x] Role-based pricing tiers (e.g., admin, manager, buyer)
-- [x] Discount code support
-- [x] Cart UI/UX polish (minicart, sidebar, badge)
-- [x] Cart tests (add/remove, quantity, clear, checkout)
+---
 
-Note: The cart implementation has been refactored into `src/store/cartStore.ts` and includes persistence via `zustand/middleware` persist, role-pricing via `src/lib/rolePricing`, and discount code helpers in `src/lib/discountCodes`.
+## POC To Do (explicit tasks mapped to goals)
 
-Note: The cart implementation has been refactored into `src/store/cartStore.ts` and includes persistence via `zustand/middleware` persist, role-pricing via `src/lib/rolePricing`, and discount code helpers in `src/lib/discountCodes`.
+Short-term (high priority, next 1–2 weeks)
 
-### Recently Completed ✅
+1. Wire frontend checkout to server RPC & add integration tests (MVP acceptance)
 
-- [x] **Search & filtering** (full-text search, faceted filters, debounced suggestions)
-  - Full-text search across product name, description, SKU, tags
-  - Faceted filters (price range, stock status, categories, brands)
-  - Debounced search input with autocomplete dropdown
-  - Search suggestions and recent searches
-  - Advanced search filters and saved searches
+- Files: `src/routes/api.create-order.ts`, `src/usecases/CheckoutUseCase.ts`, `src/models/ordersRepository.ts`
+- Acceptance: placing an order from the client creates rows in `orders` and `order_items` and returns an order summary.
 
-- [x] **Admin improvements** (audit log, user impersonation, soft delete/restore)
-  - Comprehensive audit log for all admin actions
-  - User impersonation for support/testing (with security controls)
-  - Soft delete/restore for users and other entities
-  - Enhanced admin dashboard with better navigation
-  - Bulk operations for user management
+2. Apply idempotency DB migration to staging and validate (avoid duplicates)
 
-### Upcoming (Select Next Focus)
+- Files: `sql/migrate-add-idempotency-key.sql`, `scripts/apply-sql.sh`
+- Acceptance: concurrent requests with same idempotency key do not create duplicate orders.
 
-Pick next initiative (move chosen items into active list):
+3. Shopping-list spike & UI (B2B UX) — implement heuristic generator
 
-- Security hardening (refresh token rotation, session timeout UI, email verification banner)
-- Replace demo image upload in `ProductManager.tsx` with backend storage (Supabase Storage or S3) and persist image URLs in product records
+- New files: `src/hooks/useShoppingList.ts`, `src/components/ShoppingListModal.tsx`
+- Implementation: generate candidate items from `orders` history + role templates; show editable modal allowing bulk-add to cart.
+- Acceptance: signed-in user sees suggested list, can edit quantities, and bulk-adds items to cart.
 
-# TODO / Roadmap
+4. Real product image uploads (admin UX)
 
-This file summarizes what is implemented in the codebase today and gives a focused, prioritized roadmap for the next steps. Keep it short and actionable — update as you complete items.
+- Files: `src/components/ProductManager.tsx`, `src/utils/imageUtils.ts`
+- Implementation: compress image, upload to Supabase Storage or S3, persist URL on product record.
 
-## Current implementation snapshot (verified)
+Medium-term (2–6 weeks)
 
-- Frontend
-  - Product grid, search, filtering, and faceted filters (`src/components/*`, `src/hooks/*`) — working
-  - Cart: persistent Zustand store with role-aware pricing and discounts (`src/store/cartStore.ts`) — working and tested
-  - Checkout UI and flows (client-side) — present
-  - Admin UI: category/product management, audit log, impersonation, soft-delete — present
-  - Auth UI and flows (login/register/reset) using Supabase Auth — present and tested
-- Backend / DB artifacts
-  - Orders schema and RPC
-    - `sql/setup-orders.sql` — creates `orders` and `order_items`
-    - `sql/rpc-create-order.sql` — RPC `create_order(...)` (supports p_idempotency_key in newer version)
-    - `sql/migrate-add-idempotency-key.sql` — migration adding `idempotency_key` and partial unique index
-  - Use-cases & repositories
-    - `src/usecases/CheckoutUseCase.ts` — orchestrates checkout, input validation, idempotency check
-    - `src/models/ordersRepository.ts` — RPC caller + convenience methods (findByIdempotencyKey, recordIdempotencyKey)
-    - `src/models/productsRepository.ts` — product data access helpers
-  - CI & migrations
-    - `scripts/apply-sql.sh` helper and `package.json` `migrate:ci` script
-    - GitHub Actions workflow `.github/workflows/test-and-migrate.yml` to apply migrations + run tests
-- Tests & quality
-  - Vitest setup and many unit tests in `src/__tests__` — full suite passes locally
-  - ESLint/Prettier configuration present; repo-level docs updated for MVP patterns
+5. Profile-driven search & reranking (rules-based → LLM reranker)
 
-## What is fully done (no work required right now)
+- New area: `src/mcp/` for MCP adapters; new hook `src/hooks/useEnhancedSearch.ts`
+- Start with heuristics: boost products by user's role, frequently ordered items, and project tags.
+- Then add LLM reranker service: `src/services/llmReranker.ts` that accepts query + user context and returns ranked IDs.
+- Acceptance: search results ranked higher for historically relevant products for a user.
 
-- Product search + filters
-- Cart store and pricing logic (including tests)
-- Checkout use-case wired to call DB RPC via `ordersRepository` (including idempotency handling)
-- Orders DB artifacts and migration scripts exist
-- CI workflow to apply migrations and run tests (linter note: we removed direct `${{ secrets.* }}` usage to satisfy local validator)
+6. MCP integration for DB access
 
-## Short-term priorities (next 1–2 weeks)
+- Add a lightweight MCP adapter that standardizes DB access paths and isolates LLM-callable data adapters under `src/mcp/`.
 
-These are small, high-impact items that move the app toward an MVP for B2B purchasing.
+7. LLM integration for shopping-list generation & suggestions
 
-1. Wire frontend checkout to the server RPC and add integration tests — HIGH
-   - Confirm client calls `src/routes/api.create-order.ts` which uses `CheckoutUseCase` (it exists); add integration test that runs against local Postgres used in CI or a test DB mock.
-   - Verify the RPC `create_order` behavior with idempotency key in staging.
-   - Acceptance: checkout call creates `orders` and `order_items` rows and returns order summary.
+- Service: `src/services/llmService.ts` and higher-level `src/services/recommendationService.ts` that combine DB signals + LLM prompts.
 
-2. Apply idempotency migration to staging and confirm DB-level atomic behavior — HIGH
-   - Run `scripts/apply-sql.sh sql/migrate-add-idempotency-key.sql` against staging DB.
-   - Run concurrency test to ensure duplicate requests with same idempotency key do not create duplicate orders.
-   - After verification, consider removing app-level fallback `recordIdempotencyKey` if DB-level guarantees are sufficient.
+Lower priority / housekeeping
 
-3. Implement real product image upload in `src/components/ProductManager.tsx` — MEDIUM
-   - Use `src/utils/imageUtils.ts` to compress images then upload to Supabase Storage or S3.
-   - Persist the returned URL on the product record and update UI to use stored URLs.
+- Add E2E smoke tests (login → search → add-to-cart → checkout)
+- Accessibility pass and perf lazy-loading
+- Add unit tests for `compressImageFileAsync` and expand cart tests
 
-4. Shopping-list spike (heuristic) — MEDIUM
-   - Add `src/hooks/useShoppingList.ts` that generates candidate lists from order history and role templates.
-   - Add `src/components/ShoppingListModal.tsx` to preview and bulk-add items to cart.
-   - Acceptance: user can open modal, edit quantities, and bulk-add to cart.
+---
 
-## Medium-term priorities (2–6 weeks)
+## Acceptance Criteria & Next Steps (concrete)
 
-- AI / MCP POC: local reranker under `src/mcp/` and hook `useEnhancedSearch.ts` — start rules-based, then add LLM reranker if promising
-- Automation webhook & n8n POC: `src/routes/api/webhooks/*` and an example workflow to transform shopping-list acceptance into a draft purchase order and notification
-- Add E2E smoke tests for critical flows (login → search → add-to-cart → checkout)
+- Implement the shopping-list spike (heuristic) and demo it with test user data. Timebox: 3 days.
+- Add a small reranker function (rule-based) integrated into search results; show before/after metrics (CTR or manual check). Timebox: 4 days.
+- Create a minimal MCP adapter that exposes product and order read methods used by LLM prompt generation. Timebox: 3 days.
 
-## Low-risk housekeeping & improvements
+Suggested immediate tasks I can execute now:
 
-- Add unit tests for `compressImageFileAsync` (mock canvas) and edge cases for cart discount logic
-- Accessibility pass for header, modals, and forms
-- Perf: lazy-load heavy components (ProductDetails variants, admin bulk tools)
-- Docs: update README with migration instructions and how to run CI locally (include `scripts/apply-sql.sh` usage)
+1. Create `src/hooks/useShoppingList.ts` (heuristic) + `src/components/ShoppingListModal.tsx` (UI skeleton) and unit tests.
+2. Add a rule-based reranker hook (`src/hooks/useReranker.ts`) and wire it into `src/components/ProductSearch.tsx` as an opt-in flag.
 
-## Deployment / migration checklist (operational)
+If you want I can implement (1) now — tell me to proceed and I'll create the files, tests, and a short demo page.
 
-- Run `./scripts/apply-sql.sh sql/setup-orders.sql` then `./scripts/apply-sql.sh sql/migrate-add-idempotency-key.sql` then `./scripts/apply-sql.sh sql/rpc-create-order.sql` in staging before enabling DB-level idempotency in production
-- Ensure repository Actions Variables or Secrets supply `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` for CI or set test defaults in `vitest.setup.ts`
+---
 
-## Quick decisions to make (pick one to unblock work)
+## Requirements coverage (mapping)
 
-- A: Apply idempotency migration to staging now (I can prepare a runbook and migration PR) — recommended before enabling DB-level idempotency
-- B: Start Shopping-list heuristic spike (UI + bulk-add) — quick visible value for B2B users
-- C: Implement real image upload for ProductManager — needed for admin UX
+- POC goal 1 — Shopping-list generation: PARTIAL (order data exists; UI + hook missing) → To Do: implement `useShoppingList`, modal, and bulk-add.
+- POC goal 2 — Profile-driven search: PARTIAL (search exists; reranking & profile signals missing) → To Do: add reranker and user-context signals.
+- POC goal 3 — AI-driven architecture (MCP + LLM): TBD (MCP not present; LLM services not present) → To Do: scaffold `src/mcp/` and `src/services/llm*`.
 
 ---
 
