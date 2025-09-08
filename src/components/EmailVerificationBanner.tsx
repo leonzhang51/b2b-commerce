@@ -20,7 +20,7 @@ export function EmailVerificationBanner() {
   const [isSending, setIsSending] = useState(false)
 
   // Check if email is verified
-  const isEmailVerified = user?.email_confirmed_at != null
+  const isEmailVerified = user?.email_verified === true
 
   // Don't show banner if:
   // - No user is logged in
@@ -151,7 +151,7 @@ export function EmailVerificationBannerCompact() {
   const [isSending, setIsSending] = useState(false)
 
   // Check if email is verified
-  const isEmailVerified = user?.email_confirmed_at != null
+  const isEmailVerified = user?.email_verified === true
 
   if (!user || !isEmailVerificationRequired() || isEmailVerified) {
     return null

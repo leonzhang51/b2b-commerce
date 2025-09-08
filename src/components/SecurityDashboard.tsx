@@ -32,7 +32,7 @@ export function SecurityDashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Check if email is verified
-  const isEmailVerified = user?.email_confirmed_at != null
+  const isEmailVerified = user?.email_verified === true
 
   if (!user || user.role !== 'admin') {
     return (

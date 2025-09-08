@@ -1,20 +1,7 @@
+import type CanonicalProduct from '@/types/product'
+
 export interface ProductDetailsViewProps {
-  readonly product: {
-    readonly id: string
-    readonly name: string
-    readonly description?: string
-    readonly image_url?: string
-    readonly stock?: number
-    readonly sku?: string
-    readonly category?: { name: string }
-    readonly brand?: string
-    readonly weight?: string
-    readonly dimensions?: string
-    readonly material?: string
-    readonly color?: string
-    readonly manufacturer?: string
-    readonly warranty?: string
-  } | null
+  readonly product: CanonicalProduct | null
   readonly loading: boolean
   readonly error: string | null
   readonly pricing: {
@@ -71,7 +58,7 @@ export function ProductDetailsView({
         {/* Product Image */}
         <div className="flex-shrink-0 w-full md:w-1/2">
           <img
-            src={product.image_url}
+            src={product.image_url ?? '/placeholder-product.svg'}
             alt={product.name || 'Product image'}
             className="w-full h-auto object-cover rounded"
             onError={onImageError}
@@ -82,7 +69,7 @@ export function ProductDetailsView({
         <div className="flex-1">
           <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
           {product.description && (
-            <p className="text-gray-600 mb-4">{product.description}</p>
+            <p className="text-gray-600 mb-4">{String(product.description)}</p>
           )}
 
           {/* Pricing */}
@@ -91,7 +78,7 @@ export function ProductDetailsView({
               <span className="text-lg font-bold text-gray-900">
                 {pricing.formattedPrice}
               </span>
-              {product.stock !== undefined && (
+              {typeof product.stock === 'number' && (
                 <span className="ml-4 text-sm text-gray-500">
                   Stock: {product.stock}
                 </span>
@@ -124,17 +111,19 @@ export function ProductDetailsView({
       <div className="mt-8">
         <h2 className="text-xl font-semibold mb-2">Product Details</h2>
         <ul className="list-disc list-inside text-gray-700 space-y-1">
-          {product.sku && <li>SKU: {product.sku}</li>}
+          {product.sku && <li>SKU: {String(product.sku)}</li>}
           {product.category?.name && <li>Category: {product.category.name}</li>}
-          {product.brand && <li>Brand: {product.brand}</li>}
-          {product.weight && <li>Weight: {product.weight} kg</li>}
-          {product.dimensions && <li>Dimensions: {product.dimensions}</li>}
-          {product.material && <li>Material: {product.material}</li>}
-          {product.color && <li>Color: {product.color}</li>}
-          {product.manufacturer && (
-            <li>Manufacturer: {product.manufacturer}</li>
+          {product.brand && <li>Brand: {String(product.brand)}</li>}
+          {product.weight && <li>Weight: {String(product.weight)} kg</li>}
+          {product.dimensions && (
+            <li>Dimensions: {String(product.dimensions)}</li>
           )}
-          {product.warranty && <li>Warranty: {product.warranty}</li>}
+          {product.material && <li>Material: {String(product.material)}</li>}
+          {product.color && <li>Color: {String(product.color)}</li>}
+          {product.manufacturer && (
+            <li>Manufacturer: {String(product.manufacturer)}</li>
+          )}
+          {product.warranty && <li>Warranty: {String(product.warranty)}</li>}
         </ul>
       </div>
     </div>

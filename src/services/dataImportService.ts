@@ -1,5 +1,5 @@
 // Data Import Service for Home Depot Integration
-import { homeDepotAPI } from './homeDepotAPI'
+import homeDepotAPI from '../services/homeDepotAPI'
 import { supabase } from '@/lib/supabase'
 
 interface ImportProgress {

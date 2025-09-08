@@ -5,18 +5,7 @@
  * This use case is framework-agnostic and can be tested independently.
  */
 
-export interface Product {
-  readonly id: string
-  readonly name: string
-  readonly description?: string
-  readonly price: number
-  readonly category?: string
-  readonly brand?: string
-  readonly stock?: number
-  readonly imageUrl?: string
-  readonly tags?: Array<string>
-  readonly [key: string]: unknown
-}
+import type Product from '@/types/product'
 
 export interface SearchFilters {
   readonly category?: string
@@ -129,7 +118,11 @@ export class ProductSearchUseCase {
   filterProductsByBusinessRules(products: Array<Product>): Array<Product> {
     return products.filter((product) => {
       // Hide products with invalid data
-      if (!product.name || product.price < 0) {
+      const priceNum =
+        typeof (product as any).price === 'number'
+          ? (product as any).price
+          : Number((product as any).price ?? 0)
+      if (!product.name || priceNum < 0) {
         return false
       }
 
@@ -159,10 +152,14 @@ export class ProductSearchUseCase {
           comparison = a.name.localeCompare(b.name)
           break
         case 'price':
-          comparison = a.price - b.price
+          comparison =
+            Number((a as any).price ?? 0) - Number((b as any).price ?? 0)
           break
         case 'category':
-          comparison = (a.category || '').localeCompare(b.category || '')
+          comparison = String(
+            (a as any).category?.name ?? a.category ?? '',
+          ).localeCompare(String((b as any).category?.name ?? b.category ?? ''))
+          break
           break
         case 'relevance':
         default:
@@ -208,11 +205,19 @@ export class ProductSearchUseCase {
     }
 
     // Category or brand match gets bonus
-    if (product.category?.toLowerCase().includes(searchTerm)) {
+    const catName = (product as any).category
+      ? ((product as any).category.name ?? String((product as any).category))
+      : ''
+    if (catName.toLowerCase().includes(searchTerm)) {
       score += 15
     }
 
-    if (product.brand?.toLowerCase().includes(searchTerm)) {
+    if (
+      (product as any).brand &&
+      String((product as any).brand)
+        .toLowerCase()
+        .includes(searchTerm)
+    ) {
       score += 15
     }
 

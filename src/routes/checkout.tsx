@@ -63,7 +63,7 @@ export default function CheckoutPage() {
           city: user.City || '',
           state: user.State || '',
           postal_code: user.PostalCode || '',
-          country: user.country || 'US',
+          country: user.Country || 'US',
           phone: user.phone || '',
           name: userName,
         },

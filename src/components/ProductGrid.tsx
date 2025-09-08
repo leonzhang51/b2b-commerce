@@ -1,34 +1,19 @@
 import { Link } from '@tanstack/react-router'
+import type Product from '@/types/product'
 import { Button } from '@/components/ui/button'
-import { ProductImage } from '@/components/ProductImage'
 import { useAuth } from '@/hooks/useAuth'
 import { useProducts } from '@/hooks/useSupabase'
 
-// Product type for price logic
-interface Product {
-  id: string
-  asin?: string
-  name: string
-  title?: string
-  price: number | string
-  category?: { name?: string; category_name?: string }
-  brand?: string
-  image_url?: string
-  imgUrl?: string
-  description?: string
-  sku?: string
-  stock?: number
-  [key: string]: unknown
-}
-
 function getRolePrice(product: Product, role: string | undefined): number {
+  const raw = product.price ?? product.listPrice ?? 0
   const basePrice =
-    typeof product.price === 'string'
-      ? parseFloat(product.price)
-      : product.price
+    typeof raw === 'string'
+      ? parseFloat(raw) || 0
+      : typeof raw === 'number'
+        ? raw
+        : 0
   if (role === 'admin') return basePrice * 0.9
   if (role === 'manager') return basePrice * 0.95
-  if (role === 'buyer') return basePrice
   return basePrice
 }
 
@@ -68,20 +53,31 @@ export function ProductGrid({
     const productName = product.name || product.title || 'Unnamed Product'
     const productImage = product.image_url || product.imgUrl
     const productId = product.id || product.asin
-    const categoryName =
-      product.category?.name || product.category?.category_name
+    const categoryName = product.category?.name ?? ''
 
     return (
       <Link to={`/product/${productId}` as any} className="block">
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
           {/* Product Image */}
           <div className="aspect-square bg-gray-100">
-            <ProductImage
-              src={productImage}
-              alt={productName}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
+            {productImage ? (
+              <img
+                src={productImage}
+                alt={productName}
+                className="w-full h-full object-cover"
+                loading="lazy"
+                onError={(e) => {
+                  console.log('Image failed to load:', productImage)
+                  e.currentTarget.src = '/placeholder-product.svg'
+                }}
+              />
+            ) : (
+              <img
+                src="/placeholder-product.svg"
+                alt={productName}
+                className="w-full h-full object-cover"
+              />
+            )}
           </div>
           {/* Product Info */}
           <div className="p-4">
@@ -101,7 +97,8 @@ export function ProductGrid({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-lg font-bold text-gray-900">
-                  ${price.toFixed(2)}
+                  $
+                  {typeof price === 'number' ? price.toFixed(2) : String(price)}
                 </span>
                 {user?.role && user.role !== 'buyer' && (
                   <span className="ml-2 text-xs text-blue-600 font-semibold">
@@ -117,7 +114,9 @@ export function ProductGrid({
               {product.sku && (
                 <p className="text-xs text-gray-400">SKU: {product.sku}</p>
               )}
-              <p className="text-xs text-gray-500">Stock: {product.stock}</p>
+              <p className="text-xs text-gray-500">
+                Stock: {String(product.stock ?? 'N/A')}
+              </p>
             </div>
           </div>
         </div>
@@ -169,7 +168,7 @@ export function ProductGrid({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.map((product: any) => {
+          {products.map((product: Product) => {
             return (
               <ProductCard key={product.id || product.asin} product={product} />
             )

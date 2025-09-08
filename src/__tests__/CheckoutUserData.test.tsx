@@ -49,6 +49,7 @@ const mockCartItems: Array<CartItem> = [
     price: 29.99,
     quantity: 1,
     imageUrl: 'https://example.com/image1.jpg',
+    totalPrice: 29.99 * 1,
   },
 ]
 
@@ -67,7 +68,7 @@ describe('CheckoutPage User Data Integration', () => {
     // Set up user and cart
     useUserStore.getState().setUser(mockUser)
     mockCartItems.forEach((item) => {
-      useCartStore.getState().addItem(item)
+      useCartStore.getState().addItem(item, 'buyer')
     })
 
     render(<CheckoutPage />)
@@ -89,7 +90,7 @@ describe('CheckoutPage User Data Integration', () => {
   it('should show empty form when no user is available', () => {
     // Add cart items but no user
     mockCartItems.forEach((item) => {
-      useCartStore.getState().addItem(item)
+      useCartStore.getState().addItem(item, 'buyer')
     })
 
     render(<CheckoutPage />)
@@ -102,7 +103,7 @@ describe('CheckoutPage User Data Integration', () => {
   it('should update form when user data becomes available later', async () => {
     // Add cart items but no user initially
     mockCartItems.forEach((item) => {
-      useCartStore.getState().addItem(item)
+      useCartStore.getState().addItem(item, 'buyer')
     })
 
     render(<CheckoutPage />)
@@ -138,7 +139,7 @@ describe('CheckoutPage User Data Integration', () => {
     // Set up user and cart
     useUserStore.getState().setUser(userWithoutFullName)
     mockCartItems.forEach((item) => {
-      useCartStore.getState().addItem(item)
+      useCartStore.getState().addItem(item, 'buyer')
     })
 
     render(<CheckoutPage />)
@@ -164,7 +165,7 @@ describe('CheckoutPage User Data Integration', () => {
     // Set up user and cart
     useUserStore.getState().setUser(userWithOnlyFirstName)
     mockCartItems.forEach((item) => {
-      useCartStore.getState().addItem(item)
+      useCartStore.getState().addItem(item, 'buyer')
     })
 
     render(<CheckoutPage />)

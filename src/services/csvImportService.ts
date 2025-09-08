@@ -1,5 +1,6 @@
 // CSV Import Service - Import products from CSV files
 import { supabase } from '@/lib/supabase'
+import { csvToProduct } from '@/lib/transformers/product'
 
 interface CSVProduct {
   name: string
@@ -23,7 +24,8 @@ export class CSVImportService {
 
     for (let i = 1; i < lines.length; i++) {
       const values = lines[i].split(',').map((v) => v.trim().replace(/"/g, ''))
-      const product: any = {}
+      // use a mutable plain object for parsing CSV rows
+      const product: Record<string, any> = {}
 
       headers.forEach((header, index) => {
         const value = values[index] || ''
@@ -71,11 +73,27 @@ export class CSVImportService {
       })
 
       if (product.name && product.price) {
-        products.push(product as CSVProduct)
+        const csvRow: CSVProduct = {
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          category: product.category,
+          brand: product.brand,
+          sku: product.sku,
+          image_url: product.image_url,
+          stock_quantity: product.stock_quantity,
+        }
+        products.push(csvRow)
       }
     }
 
     return products
+  }
+
+  // Preview parsed CSV rows as canonical Product shapes
+  previewCSVProducts(csvContent: string) {
+    const rows = this.parseCSV(csvContent)
+    return rows.map((r) => csvToProduct(r))
   }
 
   // Import products from CSV

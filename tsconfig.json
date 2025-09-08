@@ -5,7 +5,9 @@
     "eslint.config.js",
     "prettier.config.js",
     "vite.config.js",
-    "tailwind.config.js"
+    "tailwind.config.js",
+    "src/**/*",
+    "src/services/homeDepotAPI.d.ts"
   ],
   "exclude": ["creatDB.ts"],
 

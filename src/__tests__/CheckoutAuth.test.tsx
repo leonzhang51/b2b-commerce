@@ -43,6 +43,7 @@ const mockCartItems: Array<CartItem> = [
     price: 29.99,
     quantity: 1,
     imageUrl: 'https://example.com/image.jpg',
+    totalPrice: 29.99 * 1,
   },
 ]
 
@@ -107,7 +108,7 @@ describe('useCheckout Authentication', () => {
     // Set up user and cart
     useUserStore.getState().setUser(mockUser)
     mockCartItems.forEach((item) => {
-      useCartStore.getState().addItem(item)
+      useCartStore.getState().addItem(item, 'buyer')
     })
 
     const { result } = renderHook(() => useCheckout())
@@ -141,7 +142,7 @@ describe('useCheckout Authentication', () => {
     // Set up user and cart
     useUserStore.getState().setUser(mockUser)
     mockCartItems.forEach((item) => {
-      useCartStore.getState().addItem(item)
+      useCartStore.getState().addItem(item, 'buyer')
     })
 
     const { result } = renderHook(() => useCheckout())
@@ -171,7 +172,7 @@ describe('useCheckout Authentication', () => {
     // Set up user and cart
     useUserStore.getState().setUser(mockUser)
     mockCartItems.forEach((item) => {
-      useCartStore.getState().addItem(item)
+      useCartStore.getState().addItem(item, 'buyer')
     })
 
     const { result } = renderHook(() => useCheckout())
@@ -217,7 +218,7 @@ describe('useCheckout Authentication', () => {
     // Set up user and cart
     useUserStore.getState().setUser(mockUser)
     mockCartItems.forEach((item) => {
-      useCartStore.getState().addItem(item)
+      useCartStore.getState().addItem(item, 'buyer')
     })
 
     const { result } = renderHook(() => useCheckout())

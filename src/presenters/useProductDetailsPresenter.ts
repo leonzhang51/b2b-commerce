@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { PricingContext } from '@/usecases/ProductPricingUseCase'
+import type Product from '@/types/product'
 import { useProduct } from '@/hooks/useSupabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useCartStore } from '@/store'
@@ -7,7 +8,7 @@ import { useUIStore } from '@/store/uiStore'
 import { ProductPricingUseCase } from '@/usecases/ProductPricingUseCase'
 
 export interface ProductDetailsPresenterState {
-  readonly product: any | null
+  readonly product: Product | null
   readonly loading: boolean
   readonly error: string | null
   readonly pricing: {

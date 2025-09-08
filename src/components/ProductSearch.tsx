@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { SearchIcon, XIcon } from 'lucide-react'
+import type Product from '@/types/product'
 import { useProductSearch } from '@/hooks/useSupabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -156,7 +157,7 @@ export function ProductSearch({
 }
 
 interface SearchResultItemProps {
-  readonly product: any // We'll type this properly later
+  readonly product: Product
   readonly onClick: () => void
 }
 
@@ -169,7 +170,7 @@ function SearchResultItem({ product, onClick }: SearchResultItemProps) {
       <div className="flex items-center space-x-3">
         <div className="w-12 h-12 rounded bg-gray-100 overflow-hidden">
           <ProductImage
-            src={product.image_url}
+            src={product.image_url ?? product.imgUrl ?? ''}
             alt={product.name || 'Product image'}
             className="w-full h-full object-cover"
             loading="lazy"
@@ -189,7 +190,10 @@ function SearchResultItem({ product, onClick }: SearchResultItemProps) {
         </div>
         <div className="text-right">
           <span className="text-sm font-semibold text-gray-900">
-            ${product.price.toFixed(2)}
+            $
+            {typeof product.price === 'number'
+              ? product.price.toFixed(2)
+              : (product.price ?? '0')}
           </span>
         </div>
       </div>

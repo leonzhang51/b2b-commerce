@@ -1,15 +1,4 @@
-export interface Product {
-  readonly id: string
-  readonly name: string
-  readonly description?: string
-  readonly price: number
-  readonly imageUrl?: string
-  readonly category?: string
-  readonly brand?: string
-  readonly stock?: number
-  readonly rating?: number
-  readonly reviews?: number
-}
+import type Product from '@/types/product'
 
 export interface ProductListViewProps {
   readonly products: Array<Product>
@@ -265,10 +254,10 @@ export function ProductListView({
               className="bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
               onClick={() => onProductClick(product.id)}
             >
-              {/* Product Image */}
-              {product.imageUrl && (
+              {/* Product Image (support canonical imgUrl or image_url) */}
+              {((product as any).imgUrl || (product as any).image_url) && (
                 <img
-                  src={product.imageUrl}
+                  src={(product as any).imgUrl ?? (product as any).image_url}
                   alt={product.name}
                   className="w-full h-48 object-cover rounded-t-lg"
                 />
@@ -288,26 +277,27 @@ export function ProductListView({
 
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-lg font-bold text-gray-900">
-                    ${product.price.toFixed(2)}
+                    ${Number((product as any).price ?? 0).toFixed(2)}
                   </span>
 
-                  {product.rating && (
+                  {typeof (product as any).rating === 'number' && (
                     <div className="flex items-center">
                       <span className="text-yellow-400">★</span>
                       <span className="text-sm text-gray-600 ml-1">
-                        {product.rating} ({product.reviews || 0})
+                        {(product as any).rating} (
+                        {(product as any).reviews || 0})
                       </span>
                     </div>
                   )}
                 </div>
 
                 {/* Stock Status */}
-                {product.stock !== undefined && (
+                {typeof (product as any).stock === 'number' && (
                   <p
-                    className={`text-sm mb-3 ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}
+                    className={`text-sm mb-3 ${(product as any).stock > 0 ? 'text-green-600' : 'text-red-600'}`}
                   >
-                    {product.stock > 0
-                      ? `${product.stock} in stock`
+                    {(product as any).stock > 0
+                      ? `${(product as any).stock} in stock`
                       : 'Out of stock'}
                   </p>
                 )}

@@ -45,16 +45,27 @@ Short-term (high priority, next 1–2 weeks)
 - Note: application-level fallback `recordIdempotencyKey` can be retained for cross-db compatibility, but DB-level uniqueness now prevents duplicates when `idempotency_key` is provided.
 - Optional next step: run a staged concurrency test to validate behavior under load; current manual check in Supabase admin shows schema and index applied.
 
-3. Shopping-list spike & UI (B2B UX) — implement heuristic generator
+3. Shopping-list spike & UI (B2B UX) — COMPLETED ✅
 
 - New files: `src/hooks/useShoppingList.ts`, `src/components/ShoppingListModal.tsx`
 - Implementation: generate candidate items from `orders` history + role templates; show editable modal allowing bulk-add to cart.
-- Acceptance: signed-in user sees suggested list, can edit quantities, and bulk-adds items to cart.
+- Status: COMPLETED - Smart shopping list functionality implemented with:
+  - Heuristic generator based on order history and frequency
+  - Modal UI with quantity editing and bulk-add to cart
+  - Integration with Header component (Smart List button)
+  - Comprehensive unit tests for hook and modal component
+- Acceptance: ✅ signed-in user sees suggested list, can edit quantities, and bulk-adds items to cart.
 
-4. Real product image uploads (admin UX)
+4. Real product image uploads (admin UX) — COMPLETED ✅
 
 - Files: `src/components/ProductManager.tsx`, `src/utils/imageUtils.ts`
-- Implementation: compress image, upload to Supabase Storage or S3, persist URL on product record.
+- Implementation: compress image, upload to Supabase Storage, persist URL on product record.
+- Status: COMPLETED - Real image upload functionality implemented with:
+  - Integration with Supabase Storage for persistent image hosting
+  - Image compression before upload (800x800, 80% quality)
+  - Product selection dropdown for targeted image updates
+  - Improved UI with status indicators and preview
+  - Automatic product record updates with new image URLs
 
 Medium-term (2–6 weeks)
 
@@ -87,18 +98,30 @@ Lower priority / housekeeping
 - Add a small reranker function (rule-based) integrated into search results; show before/after metrics (CTR or manual check). Timebox: 4 days.
 - Create a minimal MCP adapter that exposes product and order read methods used by LLM prompt generation. Timebox: 3 days.
 
-Suggested immediate tasks I can execute now:
+✅ COMPLETED TASKS:
 
-1. Create `src/hooks/useShoppingList.ts` (heuristic) + `src/components/ShoppingListModal.tsx` (UI skeleton) and unit tests.
-2. Add a rule-based reranker hook (`src/hooks/useReranker.ts`) and wire it into `src/components/ProductSearch.tsx` as an opt-in flag.
+1. ✅ Created `src/hooks/useShoppingList.ts` (heuristic generator) + `src/components/ShoppingListModal.tsx` (full UI) and comprehensive unit tests.
+   - Smart shopping list analyzes order history and suggests frequently ordered items
+   - Modal allows quantity editing and bulk-add to cart
+   - Integrated into Header component with "Smart List" button
+   - Full test coverage for hook and modal component
 
-If you want I can implement (1) now — tell me to proceed and I'll create the files, tests, and a short demo page.
+2. ✅ Enhanced `src/components/ProductManager.tsx` with real image upload functionality
+   - Supabase Storage integration for persistent image hosting
+   - Image compression and optimization before upload
+   - Product selection and automatic record updates
+   - Improved UI with status indicators and preview
+
+NEXT SUGGESTED TASKS:
+
+1. Add a rule-based reranker hook (`src/hooks/useReranker.ts`) and wire it into `src/components/ProductSearch.tsx` as an opt-in flag.
+2. Create integration tests for the shopping list and image upload features.
 
 ---
 
 ## Requirements coverage (mapping)
 
-- POC goal 1 — Shopping-list generation: PARTIAL (order data exists; UI + hook missing) → To Do: implement `useShoppingList`, modal, and bulk-add.
+- POC goal 1 — Shopping-list generation: ✅ COMPLETED (order data exists; UI + hook implemented) → Status: `useShoppingList` hook, modal, and bulk-add functionality fully implemented and tested.
 - POC goal 2 — Profile-driven search: PARTIAL (search exists; reranking & profile signals missing) → To Do: add reranker and user-context signals.
 - POC goal 3 — AI-driven architecture (MCP + LLM): TBD (MCP not present; LLM services not present) → To Do: scaffold `src/mcp/` and `src/services/llm*`.
 

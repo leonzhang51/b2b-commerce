@@ -23,9 +23,9 @@ This file gives a compact, actionable status snapshot for the B2B Commerce proof
 
 ## Status by POC Goal
 
-- Goal 1 — Shopping-list generation: PARTIAL
-  - What exists: order schema + order history is present in DB artifacts; no dedicated shopping-list hook or modal in UI.
-  - To do: implement `src/hooks/useShoppingList.ts`, `src/components/ShoppingListModal.tsx`, bulk-add to cart wiring.
+- Goal 1 — Shopping-list generation: COMPLETED ✅
+- What exists: `useShoppingList` heuristic hook and `ShoppingListModal` UI implemented and tested.
+- Files: `src/hooks/useShoppingList.ts`, `src/components/ShoppingListModal.tsx` (integrated into Header with Smart List button)
 
 - Goal 2 — Profile-aware search: PARTIAL
   - What exists: search and faceted filters are implemented (`ProductSearch`, filters). User-context signals and reranking missing.
@@ -37,16 +37,21 @@ This file gives a compact, actionable status snapshot for the B2B Commerce proof
 
 ## Short-term Next Actions (prio order)
 
-1. Implement shopping-list spike (heuristic) — create `useShoppingList` + `ShoppingListModal` and unit tests. (Timebox: 3 days)
-2. Add a small rule-based reranker and wire it into `ProductSearch` as opt-in (allow comparison). (Timebox: 3–4 days)
-3. Frontend checkout wiring — WIRED; add integration test to verify DB rows are created (Timebox: 1–2 days)
+1. Rule-based reranker — PRIORITY
 
-- Note: frontend calls `/api/create-order` (`src/hooks/useCheckout.ts`), route and RPC usage exist. Current tests are unit/mocked. Add an integration test that applies migrations and asserts rows in `orders` and `order_items`.
+- Implement `src/hooks/useReranker.ts` and wire into `src/components/ProductSearch.tsx` behind an opt-in flag. (Timebox: 3–4 days)
 
-4. Apply idempotency migration — DONE (applied in Supabase)
+2. Integration tests — RECOMMENDED
 
-- Status: `idempotency_key` column and partial unique index have been applied in Supabase. Manual verification via Supabase admin confirms schema changes.
-- Next: optional concurrency validation in staging to exercise DB-level deduplication under load.
+- Create integration tests for create-order (applies migrations and asserts rows in `orders` and `order_items`) and shopping-list flow. Consider Dockerized Postgres for local CI runs. (Timebox: 2–3 days)
+
+3. Frontend checkout wiring — WIRED; integration test pending (Timebox: 1–2 days)
+
+- Note: frontend calls `/api/create-order` (`src/hooks/useCheckout.ts`), route and RPC usage exist. Current tests are unit/mocked.
+
+4. Idempotency migration — DONE (applied in Supabase)
+
+- Status: `idempotency_key` column and partial unique index present. Optional: run concurrency validation in staging.
 
 ## Medium-term Actions (2–6 weeks)
 
@@ -61,11 +66,11 @@ This file gives a compact, actionable status snapshot for the B2B Commerce proof
 
 ## Suggested Immediate Work for Copilot
 
-1. Create `src/hooks/useShoppingList.ts` with a heuristic implementation using recent order items and role-based templates. Export a function returning suggested items + confidence score.
-2. Add `src/components/ShoppingListModal.tsx` (presentation-only, client-side) that consumes the hook and allows bulk-add to cart.
-3. Add unit tests under `src/__tests__/` for the hook and modal.
+1. Implement rule-based reranker hook `src/hooks/useReranker.ts` and wire into `src/components/ProductSearch.tsx` behind an opt-in flag.
+2. Create integration test scaffolds under `src/__tests__/integration/` for create-order and shopping-list flows (use Dockerized Postgres or CI test DB).
+3. Begin scaffolding `src/mcp/` adapters for product and order reads to prepare for LLM features.
 
-If requested, I (the copilot) can create those files, wire a minimal demo, and add tests now.
+If requested, I can implement (1) and (2) now and add CI instructions to run integration tests against a test Postgres.
 
 ---
 

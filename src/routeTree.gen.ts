@@ -22,11 +22,7 @@ import { Route as CartRouteRouteImport } from './routes/cart.route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as EditUserIdRouteImport } from './routes/edit-user.$id'
-import { ServerRoute as McpServerRouteImport } from './routes/mcp'
 import { ServerRoute as ApiProductsServerRouteImport } from './routes/api/products'
-import { ServerRoute as ApiMcpTodosServerRouteImport } from './routes/api.mcp-todos'
-import { ServerRoute as ApiDemoTqTodosServerRouteImport } from './routes/api.demo-tq-todos'
-import { ServerRoute as ApiDemoNamesServerRouteImport } from './routes/api.demo-names'
 import { ServerRoute as ApiDebugProductsServerRouteImport } from './routes/api/debug-products'
 import { ServerRoute as ApiCreateOrderServerRouteImport } from './routes/api.create-order'
 
@@ -87,29 +83,9 @@ const EditUserIdRoute = EditUserIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => EditUserRoute,
 } as any)
-const McpServerRoute = McpServerRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
 const ApiProductsServerRoute = ApiProductsServerRouteImport.update({
   id: '/api/products',
   path: '/api/products',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
-const ApiMcpTodosServerRoute = ApiMcpTodosServerRouteImport.update({
-  id: '/api/mcp-todos',
-  path: '/api/mcp-todos',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
-const ApiDemoTqTodosServerRoute = ApiDemoTqTodosServerRouteImport.update({
-  id: '/api/demo-tq-todos',
-  path: '/api/demo-tq-todos',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
-const ApiDemoNamesServerRoute = ApiDemoNamesServerRouteImport.update({
-  id: '/api/demo-names',
-  path: '/api/demo-names',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiDebugProductsServerRoute = ApiDebugProductsServerRouteImport.update({
@@ -218,70 +194,32 @@ export interface RootRouteChildren {
   ProductIdRoute: typeof ProductIdRoute
 }
 export interface FileServerRoutesByFullPath {
-  '/mcp': typeof McpServerRoute
   '/api/create-order': typeof ApiCreateOrderServerRoute
   '/api/debug-products': typeof ApiDebugProductsServerRoute
-  '/api/demo-names': typeof ApiDemoNamesServerRoute
-  '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
-  '/api/mcp-todos': typeof ApiMcpTodosServerRoute
   '/api/products': typeof ApiProductsServerRoute
 }
 export interface FileServerRoutesByTo {
-  '/mcp': typeof McpServerRoute
   '/api/create-order': typeof ApiCreateOrderServerRoute
   '/api/debug-products': typeof ApiDebugProductsServerRoute
-  '/api/demo-names': typeof ApiDemoNamesServerRoute
-  '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
-  '/api/mcp-todos': typeof ApiMcpTodosServerRoute
   '/api/products': typeof ApiProductsServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
-  '/mcp': typeof McpServerRoute
   '/api/create-order': typeof ApiCreateOrderServerRoute
   '/api/debug-products': typeof ApiDebugProductsServerRoute
-  '/api/demo-names': typeof ApiDemoNamesServerRoute
-  '/api/demo-tq-todos': typeof ApiDemoTqTodosServerRoute
-  '/api/mcp-todos': typeof ApiMcpTodosServerRoute
   '/api/products': typeof ApiProductsServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths:
-    | '/mcp'
-    | '/api/create-order'
-    | '/api/debug-products'
-    | '/api/demo-names'
-    | '/api/demo-tq-todos'
-    | '/api/mcp-todos'
-    | '/api/products'
+  fullPaths: '/api/create-order' | '/api/debug-products' | '/api/products'
   fileServerRoutesByTo: FileServerRoutesByTo
-  to:
-    | '/mcp'
-    | '/api/create-order'
-    | '/api/debug-products'
-    | '/api/demo-names'
-    | '/api/demo-tq-todos'
-    | '/api/mcp-todos'
-    | '/api/products'
-  id:
-    | '__root__'
-    | '/mcp'
-    | '/api/create-order'
-    | '/api/debug-products'
-    | '/api/demo-names'
-    | '/api/demo-tq-todos'
-    | '/api/mcp-todos'
-    | '/api/products'
+  to: '/api/create-order' | '/api/debug-products' | '/api/products'
+  id: '__root__' | '/api/create-order' | '/api/debug-products' | '/api/products'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
-  McpServerRoute: typeof McpServerRoute
   ApiCreateOrderServerRoute: typeof ApiCreateOrderServerRoute
   ApiDebugProductsServerRoute: typeof ApiDebugProductsServerRoute
-  ApiDemoNamesServerRoute: typeof ApiDemoNamesServerRoute
-  ApiDemoTqTodosServerRoute: typeof ApiDemoTqTodosServerRoute
-  ApiMcpTodosServerRoute: typeof ApiMcpTodosServerRoute
   ApiProductsServerRoute: typeof ApiProductsServerRoute
 }
 
@@ -368,39 +306,11 @@ declare module '@tanstack/react-router' {
 }
 declare module '@tanstack/react-start/server' {
   interface ServerFileRoutesByPath {
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
     '/api/products': {
       id: '/api/products'
       path: '/api/products'
       fullPath: '/api/products'
       preLoaderRoute: typeof ApiProductsServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
-    '/api/mcp-todos': {
-      id: '/api/mcp-todos'
-      path: '/api/mcp-todos'
-      fullPath: '/api/mcp-todos'
-      preLoaderRoute: typeof ApiMcpTodosServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
-    '/api/demo-tq-todos': {
-      id: '/api/demo-tq-todos'
-      path: '/api/demo-tq-todos'
-      fullPath: '/api/demo-tq-todos'
-      preLoaderRoute: typeof ApiDemoTqTodosServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
-    '/api/demo-names': {
-      id: '/api/demo-names'
-      path: '/api/demo-names'
-      fullPath: '/api/demo-names'
-      preLoaderRoute: typeof ApiDemoNamesServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/debug-products': {
@@ -448,12 +358,8 @@ export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 const rootServerRouteChildren: RootServerRouteChildren = {
-  McpServerRoute: McpServerRoute,
   ApiCreateOrderServerRoute: ApiCreateOrderServerRoute,
   ApiDebugProductsServerRoute: ApiDebugProductsServerRoute,
-  ApiDemoNamesServerRoute: ApiDemoNamesServerRoute,
-  ApiDemoTqTodosServerRoute: ApiDemoTqTodosServerRoute,
-  ApiMcpTodosServerRoute: ApiMcpTodosServerRoute,
   ApiProductsServerRoute: ApiProductsServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport

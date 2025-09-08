@@ -1,13 +1,16 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
+import { List } from 'lucide-react'
 import { MiniCartDropdown } from '@/components/CartComponents'
 import { ProductSearch } from '@/components/ProductSearch'
+import { ShoppingListModal } from '@/components/ShoppingListModal'
 
 import { useAuth } from '@/hooks/useAuth'
 
 export function Header() {
   const { user, signOut } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [shoppingListOpen, setShoppingListOpen] = useState(false)
   const isAdmin = user && user.role === 'admin'
 
   const navLinks = []
@@ -65,6 +68,16 @@ export function Header() {
           </div>
         ))}
         <div className="flex items-center gap-2 px-2">
+          {user && (
+            <button
+              onClick={() => setShoppingListOpen(true)}
+              className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+              title="Smart Shopping List"
+            >
+              <List className="w-4 h-4" />
+              <span className="hidden sm:inline">Smart List</span>
+            </button>
+          )}
           <MiniCartDropdown />
           <Link
             to="/cart"
@@ -97,6 +110,12 @@ export function Header() {
           )}
         </div>
       </nav>
+
+      {/* Shopping List Modal */}
+      <ShoppingListModal
+        isOpen={shoppingListOpen}
+        onClose={() => setShoppingListOpen(false)}
+      />
     </header>
   )
 }

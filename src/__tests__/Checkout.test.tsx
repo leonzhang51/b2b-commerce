@@ -36,6 +36,7 @@ const mockCartItems: Array<CartItem> = [
     price: 29.99,
     quantity: 2,
     imageUrl: 'https://example.com/image1.jpg',
+    totalPrice: 29.99 * 2,
   },
   {
     id: '2',
@@ -44,6 +45,7 @@ const mockCartItems: Array<CartItem> = [
     price: 49.99,
     quantity: 1,
     imageUrl: 'https://example.com/image2.jpg',
+    totalPrice: 49.99 * 1,
   },
 ]
 
@@ -72,7 +74,7 @@ describe('CheckoutPage', () => {
     // Set up user and cart
     useUserStore.getState().setUser(mockUser)
     mockCartItems.forEach((item) => {
-      useCartStore.getState().addItem(item)
+      useCartStore.getState().addItem(item, 'buyer')
     })
 
     render(<CheckoutPage />)
@@ -91,7 +93,7 @@ describe('CheckoutPage', () => {
     // Set up user and cart
     useUserStore.getState().setUser(mockUser)
     mockCartItems.forEach((item) => {
-      useCartStore.getState().addItem(item)
+      useCartStore.getState().addItem(item, 'buyer')
     })
 
     render(<CheckoutPage />)
@@ -105,7 +107,7 @@ describe('CheckoutPage', () => {
     // Set up user and cart
     useUserStore.getState().setUser(mockUser)
     mockCartItems.forEach((item) => {
-      useCartStore.getState().addItem(item)
+      useCartStore.getState().addItem(item, 'buyer')
     })
 
     render(<CheckoutPage />)
@@ -128,7 +130,7 @@ describe('CheckoutPage', () => {
     // Set up user and cart
     useUserStore.getState().setUser(mockUser)
     mockCartItems.forEach((item) => {
-      useCartStore.getState().addItem(item)
+      useCartStore.getState().addItem(item, 'buyer')
     })
 
     render(<CheckoutPage />)
@@ -152,7 +154,7 @@ describe('CheckoutPage', () => {
     // Set up user and cart
     useUserStore.getState().setUser(mockUser)
     mockCartItems.forEach((item) => {
-      useCartStore.getState().addItem(item)
+      useCartStore.getState().addItem(item, 'buyer')
     })
 
     render(<CheckoutPage />)
@@ -202,7 +204,7 @@ describe('CheckoutPage', () => {
     // Set up user and cart
     useUserStore.getState().setUser(mockUser)
     mockCartItems.forEach((item) => {
-      useCartStore.getState().addItem(item)
+      useCartStore.getState().addItem(item, 'buyer')
     })
 
     render(<CheckoutPage />)
@@ -254,7 +256,7 @@ describe('CheckoutPage', () => {
     // Set up user and cart
     useUserStore.getState().setUser(mockUser)
     mockCartItems.forEach((item) => {
-      useCartStore.getState().addItem(item)
+      useCartStore.getState().addItem(item, 'buyer')
     })
 
     render(<CheckoutPage />)

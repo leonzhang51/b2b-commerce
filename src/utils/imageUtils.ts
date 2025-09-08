@@ -79,7 +79,13 @@ export function getImageSrc(
   if (!imageUrl) return fallback
 
   // If it's already a placeholder, return it
-  if (imageUrl.includes('placeholder')) return imageUrl
+  if (imageUrl.includes('placeholder')) {
+    // Handle both .jpg and .svg placeholders
+    if (imageUrl.includes('placeholder-product.jpg')) {
+      return '/placeholder-product.svg' // Prefer SVG for consistency
+    }
+    return imageUrl
+  }
 
   // If it's a relative path, ensure it starts with /
   if (!imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
