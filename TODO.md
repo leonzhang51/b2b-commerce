@@ -92,6 +92,8 @@ Lower priority / housekeeping
 
 ---
 
+8. AI-driven shopping assistant (LLM chatbot)
+
 ## Acceptance Criteria & Next Steps (concrete)
 
 - Implement the shopping-list spike (heuristic) and demo it with test user data. Timebox: 3 days.

@@ -1,4 +1,7 @@
+import { Link } from '@tanstack/react-router'
 import type CanonicalProduct from '@/types/product'
+import { categoryAccent } from '@/config/categories'
+import { categoryIcon } from '@/utils/categoryIcon'
 
 export interface ProductDetailsViewProps {
   readonly product: CanonicalProduct | null
@@ -52,8 +55,50 @@ export function ProductDetailsView({
     )
   }
 
+  // Resolve category fields from either nested category or flat fields
+  const categoryId =
+    (product as any)?.category?.id ?? (product as any)?.category_id ?? null
+  const categoryName =
+    (product as any)?.category?.name ??
+    (product as any)?.category?.category_name ??
+    null
+  const categoryAccentHint = (product as any)?.category?.accent_color ?? null
+
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-lg shadow p-8 mt-8">
+      {/* Breadcrumbs */}
+      <nav className="mb-4 text-sm text-gray-600" aria-label="Breadcrumb">
+        <ol className="flex flex-wrap gap-1 items-center">
+          <li>
+            <Link to="/" className="hover:underline">
+              Home
+            </Link>
+          </li>
+          {categoryId && categoryName && (
+            <>
+              <li>
+                <span className="mx-1">/</span>
+              </li>
+              <li>
+                <Link
+                  to="/search"
+                  search={{ categoryId }}
+                  className="hover:underline"
+                >
+                  {categoryName}
+                </Link>
+              </li>
+            </>
+          )}
+          <li>
+            <span className="mx-1">/</span>
+          </li>
+          <li className="font-semibold text-blue-700 truncate max-w-[60ch]">
+            {product.name}
+          </li>
+        </ol>
+      </nav>
+
       <div className="flex flex-col md:flex-row gap-8">
         {/* Product Image */}
         <div className="flex-shrink-0 w-full md:w-1/2">
@@ -68,6 +113,27 @@ export function ProductDetailsView({
         {/* Product Info */}
         <div className="flex-1">
           <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
+
+          {/* Category chip */}
+          {categoryId && categoryName && (
+            <div className="mb-3">
+              <Link
+                to="/search"
+                search={{ categoryId }}
+                className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-sm text-gray-700 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+              >
+                <span
+                  className={`inline-flex h-6 w-6 items-center justify-center rounded-full ${categoryAccent(String(categoryName), categoryAccentHint)}`}
+                >
+                  {categoryIcon(String(categoryName), 'h-4 w-4')}
+                </span>
+                <span className="whitespace-normal break-words">
+                  {categoryName}
+                </span>
+              </Link>
+            </div>
+          )}
+
           {product.description && (
             <p className="text-gray-600 mb-4">{String(product.description)}</p>
           )}
@@ -112,7 +178,7 @@ export function ProductDetailsView({
         <h2 className="text-xl font-semibold mb-2">Product Details</h2>
         <ul className="list-disc list-inside text-gray-700 space-y-1">
           {product.sku && <li>SKU: {String(product.sku)}</li>}
-          {product.category?.name && <li>Category: {product.category.name}</li>}
+          {categoryName && <li>Category: {categoryName}</li>}
           {product.brand && <li>Brand: {String(product.brand)}</li>}
           {product.weight && <li>Weight: {String(product.weight)} kg</li>}
           {product.dimensions && (

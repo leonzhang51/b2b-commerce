@@ -12,6 +12,7 @@ import { createServerRootRoute } from '@tanstack/react-start/server'
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UserAdminRouteImport } from './routes/user-admin'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
@@ -31,6 +32,11 @@ const rootServerRouteImport = createServerRootRoute()
 const UserAdminRoute = UserAdminRouteImport.update({
   id: '/user-admin',
   path: '/user-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/search': typeof SearchRoute
   '/user-admin': typeof UserAdminRoute
   '/edit-user/$id': typeof EditUserIdRoute
   '/product/$id': typeof ProductIdRoute
@@ -121,6 +128,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/search': typeof SearchRoute
   '/user-admin': typeof UserAdminRoute
   '/edit-user/$id': typeof EditUserIdRoute
   '/product/$id': typeof ProductIdRoute
@@ -135,6 +143,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/search': typeof SearchRoute
   '/user-admin': typeof UserAdminRoute
   '/edit-user/$id': typeof EditUserIdRoute
   '/product/$id': typeof ProductIdRoute
@@ -150,6 +159,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/reset-password'
+    | '/search'
     | '/user-admin'
     | '/edit-user/$id'
     | '/product/$id'
@@ -163,6 +173,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/reset-password'
+    | '/search'
     | '/user-admin'
     | '/edit-user/$id'
     | '/product/$id'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/reset-password'
+    | '/search'
     | '/user-admin'
     | '/edit-user/$id'
     | '/product/$id'
@@ -190,6 +202,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SearchRoute: typeof SearchRoute
   UserAdminRoute: typeof UserAdminRoute
   ProductIdRoute: typeof ProductIdRoute
 }
@@ -230,6 +243,13 @@ declare module '@tanstack/react-router' {
       path: '/user-admin'
       fullPath: '/user-admin'
       preLoaderRoute: typeof UserAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -351,6 +371,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SearchRoute: SearchRoute,
   UserAdminRoute: UserAdminRoute,
   ProductIdRoute: ProductIdRoute,
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { List } from 'lucide-react'
 import { MiniCartDropdown } from '@/components/CartComponents'
 import { ProductSearch } from '@/components/ProductSearch'
@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth'
 
 export function Header() {
   const { user, signOut } = useAuth()
+  const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const [shoppingListOpen, setShoppingListOpen] = useState(false)
   const isAdmin = user && user.role === 'admin'
@@ -18,8 +19,8 @@ export function Header() {
     navLinks.push({ to: '/user-admin', label: 'User Admin' })
   }
 
-  const handleSearch = (_query: string) => {
-    // Optionally: trigger navigation or global search state here
+  const handleSearch = (query: string) => {
+    navigate({ to: '/search', search: { q: query } })
   }
 
   return (

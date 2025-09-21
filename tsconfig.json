@@ -9,7 +9,7 @@
     "src/**/*",
     "src/services/homeDepotAPI.d.ts"
   ],
-  "exclude": ["creatDB.ts"],
+  "exclude": ["creatDB.ts", "src/_archived/**"],
 
   "compilerOptions": {
     "target": "ES2022",

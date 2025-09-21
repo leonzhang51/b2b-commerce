@@ -1,5 +1,7 @@
 import { useCategories } from '@/hooks/useSupabase'
 import { Button } from '@/components/ui/button'
+import { categoryAccent } from '@/config/categories'
+import { categoryIcon } from '@/utils/categoryIcon'
 
 interface CategoryNavigationProps {
   readonly onCategorySelect: (categoryId: number | null) => void
@@ -38,6 +40,20 @@ export function CategoryNavigation({
     )
   }
 
+  // Prefer DB-driven ordering: featured_rank first (ascending), then the rest in original order
+  const ranked = (categories as Array<any>).filter(
+    (c) => typeof c.featured_rank === 'number',
+  )
+  const ordered = ranked.length
+    ? [...ranked]
+        .sort((a: any, b: any) => a.featured_rank - b.featured_rank)
+        .concat(
+          (categories as Array<any>).filter(
+            (c) => typeof c.featured_rank !== 'number',
+          ),
+        )
+    : categories
+
   return (
     <div className="space-y-1">
       <Button
@@ -48,16 +64,23 @@ export function CategoryNavigation({
         All Products
       </Button>
 
-      {categories.map((category) => (
+      {ordered.map((category) => (
         <Button
           key={category.category_id}
           variant={
             selectedCategoryId === category.category_id ? 'default' : 'ghost'
           }
-          className="w-full justify-start text-sm"
+          className="w-full justify-start text-sm text-black h-auto min-h-[2.5rem] py-2 whitespace-normal break-words text-left leading-snug flex items-start gap-2"
           onClick={() => onCategorySelect(category.category_id)}
         >
-          {category.name}
+          <span
+            className={`mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full ${categoryAccent(String(category.name || ''), category.accent_color)}`}
+          >
+            {categoryIcon(String(category.name || ''), 'h-4 w-4')}
+          </span>
+          <span className="block flex-1 min-w-0 break-words whitespace-normal text-left">
+            {category.name}
+          </span>
         </Button>
       ))}
     </div>

@@ -20,11 +20,13 @@ function getRolePrice(product: Product, role: string | undefined): number {
 interface ProductGridProps {
   readonly selectedCategoryId?: number | null
   readonly searchQuery?: string
+  readonly maxItems?: number
 }
 
 export function ProductGrid({
   selectedCategoryId,
   searchQuery,
+  maxItems,
 }: ProductGridProps) {
   const {
     data: products = [],
@@ -168,11 +170,16 @@ export function ProductGrid({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.map((product: Product) => {
-            return (
-              <ProductCard key={product.id || product.asin} product={product} />
-            )
-          })}
+          {(maxItems ? products.slice(0, maxItems) : products).map(
+            (product: Product) => {
+              return (
+                <ProductCard
+                  key={product.id || product.asin}
+                  product={product}
+                />
+              )
+            },
+          )}
         </div>
       )}
     </div>

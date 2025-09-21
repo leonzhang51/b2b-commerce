@@ -2,7 +2,7 @@ import { createServerFileRoute } from '@tanstack/react-start/server'
 import { supabase } from '@/lib/supabase'
 
 export const ServerRoute = createServerFileRoute('/api/products').methods({
-  GET: async ({ request }) => {
+  GET: async ({ request }: { request: Request }) => {
     try {
       const url = new URL(request.url)
       const q = url.searchParams.get('q') ?? undefined

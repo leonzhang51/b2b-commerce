@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { B2BCommercePage } from '@/components/B2BCommercePage'
+import { HomePage } from '@/components/HomePage'
 import { ClientOnly } from '@/components/ClientOnly'
 
 function IndexComponent() {
@@ -14,7 +14,7 @@ function IndexComponent() {
         </div>
       }
     >
-      <B2BCommercePage />
+      <HomePage />
     </ClientOnly>
   )
 }

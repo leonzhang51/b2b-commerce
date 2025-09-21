@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase'
 function mapProductRow(row: any) {
   if (!row) return row
 
-  return {
+  const mapped: any = {
     // preserve original new fields
     ...row,
     // legacy aliases (many parts of app expect these names)
@@ -22,6 +22,19 @@ function mapProductRow(row: any) {
     category_id: row.category_id ?? row.category_id,
     is_best_seller: row.isBestSeller ?? row.is_best_seller,
   }
+
+  // normalize optional joined category shape
+  if (row.category) {
+    const c = row.category
+    mapped.category = {
+      id: c.id,
+      name: c.category_name ?? c.name,
+      accent_color: c.accent_color ?? null,
+      featured_rank: c.featured_rank ?? null,
+    }
+  }
+
+  return mapped
 }
 
 // Legacy products function - removed to avoid conflicts
@@ -35,7 +48,7 @@ export function useProduct(id: string) {
         .from('products')
         // select new product fields and related category name
         .select(
-          `asin,title,imgUrl,productURL,stars,reviews,price,listPrice,category_id,isBestSeller,boughtInLastMonth,category:categories(id,category_name)`,
+          `asin,title,imgUrl,productURL,stars,reviews,price,listPrice,category_id,isBestSeller,boughtInLastMonth,category:categories(id,category_name,accent_color,featured_rank)`,
         )
         .eq('asin', id)
         .single()
@@ -54,13 +67,23 @@ export function useCategories(parentId?: number | null, level?: number) {
     queryFn: async () => {
       // New categories table schema contains only `id` and `category_name`.
       // Ignore hierarchical params (parentId, level) and return a flat list.
-      const { data, error } = await supabase
+      // Try to fetch optional featured_rank and accent_color; fall back if columns don't exist
+      let { data, error } = await supabase
         .from('categories')
-        .select('id, category_name')
+        .select('id, category_name, featured_rank, accent_color')
         .order('category_name')
 
+      if (error) {
+        const fallback = await supabase
+          .from('categories')
+          .select('id, category_name')
+          .order('category_name')
+        data = fallback.data as any
+        error = fallback.error
+      }
+
       if (error) throw error
-      // Map new flat rows to legacy Category shape
+      // Map rows to legacy Category shape, preserving new meta fields when present
       return (Array.isArray(data)
         ? data.map((row: any) => ({
             category_id: row.id,
@@ -76,6 +99,9 @@ export function useCategories(parentId?: number | null, level?: number) {
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             category_name: row.category_name,
+            // optional meta
+            featured_rank: row.featured_rank ?? null,
+            accent_color: row.accent_color ?? null,
           }))
         : data) as unknown as Array<Category>
     },
@@ -157,8 +183,15 @@ export function useProducts(options?: {
   maxPrice?: number
   page?: number
   pageSize?: number
+  includeCategory?: boolean
 }) {
-  const { categoryId, searchTerm, page = 1, pageSize = 20 } = options || {}
+  const {
+    categoryId,
+    searchTerm,
+    page = 1,
+    pageSize = 20,
+    includeCategory = false,
+  } = options || {}
 
   return useQuery({
     queryKey: ['products', options],
@@ -169,7 +202,9 @@ export function useProducts(options?: {
           const { data, error } = await supabase
             .from('products')
             .select(
-              `asin,title,imgUrl,productURL,stars,reviews,price,listPrice,category_id,isBestSeller,boughtInLastMonth`,
+              includeCategory
+                ? `asin,title,imgUrl,productURL,stars,reviews,price,listPrice,category_id,isBestSeller,boughtInLastMonth,category:categories(id,category_name,accent_color,featured_rank)`
+                : `asin,title,imgUrl,productURL,stars,reviews,price,listPrice,category_id,isBestSeller,boughtInLastMonth`,
             )
             .ilike('title', `%${searchTerm}%`)
             .limit(pageSize)
@@ -183,7 +218,9 @@ export function useProducts(options?: {
           let query = supabase
             .from('products')
             .select(
-              `asin,title,imgUrl,productURL,stars,reviews,price,listPrice,category_id,isBestSeller,boughtInLastMonth`,
+              includeCategory
+                ? `asin,title,imgUrl,productURL,stars,reviews,price,listPrice,category_id,isBestSeller,boughtInLastMonth,category:categories(id,category_name,accent_color,featured_rank)`
+                : `asin,title,imgUrl,productURL,stars,reviews,price,listPrice,category_id,isBestSeller,boughtInLastMonth`,
             )
 
           if (categoryId) {
